@@ -147,6 +147,7 @@ function App() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isGeneratingMore, setIsGeneratingMore] = useState(false);
   const [step, setStep] = useState(0); // 0: input, 1: processing, 2: result
+  const [error, setError] = useState('');
 
   const [clips, setClips] = useState([]);
 
@@ -222,6 +223,12 @@ function App() {
             <p className="subtitle">
               Create 10 viral clips from 1 long video in minutes, 10x faster.
             </p>
+            
+            {error && (
+              <div style={{ color: '#ef4444', marginBottom: '1rem', padding: '0.5rem 1rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', border: '1px solid #ef4444' }}>
+                {error}
+              </div>
+            )}
             
             <div className="input-container">
               <Video className="input-icon" size={24} />

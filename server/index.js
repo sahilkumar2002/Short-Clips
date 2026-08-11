@@ -45,19 +45,29 @@ app.post('/api/process', async (req, res) => {
 
         const clips = [];
         
+        // Add bypass args and cookies if available
+        const cookiesPath = path.join(__dirname, '..', 'cookies.txt');
+        const ytDlpBaseArgs = [
+            '--extractor-args', 'youtube:player_client=ios,web_safari'
+        ];
+        if (fs.existsSync(cookiesPath)) {
+            ytDlpBaseArgs.push('--cookies', cookiesPath);
+        }
+
         // 1. Download subtitles first
         console.log("Fetching auto-subtitles...");
         const subsPath = path.join(clipsDir, 'subtitles');
         await new Promise((resolve) => {
-            const subProcess = spawn(YTDLP_BIN, [
+            const subArgs = [
                 url,
                 '--write-auto-subs',
                 '--sub-format', 'vtt',
                 '--sub-langs', 'en',
                 '--skip-download',
-                '--extractor-args', 'youtube:player_client=android,web',
+                ...ytDlpBaseArgs,
                 '-o', subsPath
-            ]);
+            ];
+            const subProcess = spawn(YTDLP_BIN, subArgs);
             subProcess.stdout.on('data', d => console.log(`[subs stdout]: ${d}`));
             subProcess.stderr.on('data', d => console.error(`[subs stderr]: ${d}`));
             subProcess.on('error', (err) => {
@@ -112,14 +122,15 @@ app.post('/api/process', async (req, res) => {
                 const outputPath = path.join(clipsDir, range.name);
                 console.log(`Downloading ${range.name} for range ${range.start}...`);
                 
-                const process = spawn(YTDLP_BIN, [
+                const dlArgs = [
                     url,
                     '--ffmpeg-location', FFMPEG_BIN,
                     '--download-sections', range.start,
                     '-f', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best',
-                    '--extractor-args', 'youtube:player_client=android,web',
+                    ...ytDlpBaseArgs,
                     '-o', outputPath
-                ]);
+                ];
+                const process = spawn(YTDLP_BIN, dlArgs);
                 
                 process.stdout.on('data', d => console.log(`[${range.name} stdout]: ${d}`));
                 process.stderr.on('data', d => console.error(`[${range.name} stderr]: ${d}`));

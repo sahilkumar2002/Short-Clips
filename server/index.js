@@ -57,6 +57,12 @@ app.post('/api/process', async (req, res) => {
                 '--skip-download',
                 '-o', subsPath
             ]);
+            subProcess.stdout.on('data', d => console.log(`[subs stdout]: ${d}`));
+            subProcess.stderr.on('data', d => console.error(`[subs stderr]: ${d}`));
+            subProcess.on('error', (err) => {
+                console.error('Error spawning yt-dlp for subtitles:', err);
+                resolve();
+            });
             subProcess.on('close', resolve);
         });
         
@@ -112,6 +118,14 @@ app.post('/api/process', async (req, res) => {
                     '-f', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best',
                     '-o', outputPath
                 ]);
+                
+                process.stdout.on('data', d => console.log(`[${range.name} stdout]: ${d}`));
+                process.stderr.on('data', d => console.error(`[${range.name} stderr]: ${d}`));
+
+                process.on('error', (err) => {
+                    console.error('Error spawning yt-dlp for download:', err);
+                    resolve(null);
+                });
 
                 process.on('close', (code) => {
                     if (code === 0) {
@@ -189,6 +203,13 @@ app.post('/api/download', async (req, res) => {
 
     console.log(`Cropping ${filename} to ${ratio}...`);
     const ffmpegProc = spawn(FFMPEG_BIN, args);
+    ffmpegProc.stdout.on('data', d => console.log(`[ffmpeg stdout]: ${d}`));
+    ffmpegProc.stderr.on('data', d => console.error(`[ffmpeg stderr]: ${d}`));
+    
+    ffmpegProc.on('error', (err) => {
+        console.error('Error spawning ffmpeg:', err);
+        res.status(500).json({ error: 'Failed to start ffmpeg' });
+    });
     
     ffmpegProc.on('close', (code) => {
         if (code === 0) {

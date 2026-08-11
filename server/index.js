@@ -55,6 +55,7 @@ app.post('/api/process', async (req, res) => {
                 '--sub-format', 'vtt',
                 '--sub-langs', 'en',
                 '--skip-download',
+                '--extractor-args', 'youtube:player_client=android,web',
                 '-o', subsPath
             ]);
             subProcess.stdout.on('data', d => console.log(`[subs stdout]: ${d}`));
@@ -116,6 +117,7 @@ app.post('/api/process', async (req, res) => {
                     '--ffmpeg-location', FFMPEG_BIN,
                     '--download-sections', range.start,
                     '-f', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best',
+                    '--extractor-args', 'youtube:player_client=android,web',
                     '-o', outputPath
                 ]);
                 

@@ -201,7 +201,7 @@ app.post('/api/download', async (req, res) => {
 });
 
 // Fallback to React app
-app.get('*', (req, res) => {
+app.use((req, res) => {
     res.sendFile(path.join(distDir, 'index.html'));
 });
 

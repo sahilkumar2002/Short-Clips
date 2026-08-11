@@ -120,6 +120,8 @@ app.post('/api/process', async (req, res) => {
             });
         }
 
+        let lastErrorMsg = "";
+        
         // Run sequentially to prevent out-of-memory crashes on free-tier servers
         for (const range of timeRanges) {
             const clip = await new Promise((resolve) => {
@@ -136,11 +138,17 @@ app.post('/api/process', async (req, res) => {
                 ];
                 const process = spawn(YTDLP_BIN, dlArgs);
                 
+                let processError = "";
                 process.stdout.on('data', d => console.log(`[${range.name} stdout]: ${d}`));
-                process.stderr.on('data', d => console.error(`[${range.name} stderr]: ${d}`));
+                process.stderr.on('data', d => {
+                    const errStr = d.toString();
+                    console.error(`[${range.name} stderr]: ${errStr}`);
+                    processError += errStr;
+                });
 
                 process.on('error', (err) => {
                     console.error('Error spawning yt-dlp for download:', err);
+                    lastErrorMsg = err.toString();
                     resolve(null);
                 });
 
@@ -162,6 +170,7 @@ app.post('/api/process', async (req, res) => {
                         });
                     } else {
                         console.log(`Failed to process ${range.name}`);
+                        if (processError && !lastErrorMsg) lastErrorMsg = processError;
                         resolve(null);
                     }
                 });
@@ -173,7 +182,7 @@ app.post('/api/process', async (req, res) => {
         }
 
         if (clips.length === 0) {
-             return res.status(500).json({ error: 'Failed to generate clips. Make sure the video is long enough.' });
+             return res.status(500).json({ error: `Failed to generate clips. Error: ${lastErrorMsg.substring(0, 200)}` });
         }
 
         res.json({ clips });

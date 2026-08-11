@@ -151,6 +151,29 @@ function App() {
 
   const [clips, setClips] = useState([]);
 
+  const pollStatus = async (jobId, onComplete) => {
+    try {
+      const response = await fetch(`/api/status/${jobId}`);
+      if (!response.ok) throw new Error('Network error');
+      const data = await response.json();
+      
+      if (data.status === 'completed') {
+        onComplete(data.clips);
+      } else if (data.status === 'error') {
+        setError(data.error || 'An error occurred during processing.');
+        setStep(0);
+        setIsProcessing(false);
+        setIsGeneratingMore(false);
+      } else {
+        // still processing
+        setTimeout(() => pollStatus(jobId, onComplete), 3000);
+      }
+    } catch (err) {
+      // If network fails, keep trying (server might be rebooting or unreachable briefly)
+      setTimeout(() => pollStatus(jobId, onComplete), 3000);
+    }
+  };
+
   const handleGetClips = async () => {
     if (!videoUrl) return;
     setStep(1);
@@ -165,17 +188,20 @@ function App() {
       });
       
       const data = await response.json();
-      if (data.clips) {
-        setClips(data.clips);
-        setStep(2);
+      if (data.jobId) {
+        pollStatus(data.jobId, (newClips) => {
+          setClips(newClips);
+          setStep(2);
+          setIsProcessing(false);
+        });
       } else {
-        setError(data.error || 'Failed to process video');
+        setError(data.error || 'Failed to start processing job');
         setStep(0);
+        setIsProcessing(false);
       }
     } catch (err) {
-      alert('Failed to connect to backend server. Make sure it is running.');
+      setError('Failed to connect to backend server. Make sure it is running.');
       setStep(0);
-    } finally {
       setIsProcessing(false);
     }
   };
@@ -190,14 +216,17 @@ function App() {
       });
       
       const data = await response.json();
-      if (data.clips) {
-        setClips([...clips, ...data.clips]);
+      if (data.jobId) {
+        pollStatus(data.jobId, (newClips) => {
+          setClips(prev => [...prev, ...newClips]);
+          setIsGeneratingMore(false);
+        });
       } else {
-        alert(data.error || 'Failed to generate more clips');
+        alert(data.error || 'Failed to start processing job');
+        setIsGeneratingMore(false);
       }
     } catch (err) {
       alert('Failed to connect to backend server.');
-    } finally {
       setIsGeneratingMore(false);
     }
   };

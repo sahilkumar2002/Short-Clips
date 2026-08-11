@@ -25,16 +25,27 @@ const FFMPEG_BIN = path.join(__dirname, 'bin', isWindows ? 'ffmpeg.exe' : 'ffmpe
 const distDir = path.join(__dirname, '..', 'dist');
 app.use(express.static(distDir));
 
+const jobs = new Map();
+const generateId = () => Math.random().toString(36).substr(2, 9);
+
 app.post('/api/process', async (req, res) => {
     const { url, offset = 0 } = req.body;
     if (!url) {
         return res.status(400).json({ error: 'URL is required' });
     }
 
-    try {
-        console.log(`Processing video: ${url}`);
-        
-        // Clean up old clips only on first generation
+    const jobId = generateId();
+    jobs.set(jobId, { status: 'processing', clips: [], error: null });
+    
+    // Return immediately to prevent Render's 100-second timeout
+    res.json({ jobId });
+
+    // Start background processing
+    (async () => {
+        try {
+            console.log(`Processing video [${jobId}]: ${url}`);
+            
+            // Clean up old clips only on first generation
         if (offset === 0) {
             fs.readdirSync(clipsDir).forEach(file => {
                 if (file.endsWith('.mp4') || file.endsWith('.vtt')) {
@@ -182,14 +193,22 @@ app.post('/api/process', async (req, res) => {
         }
 
         if (clips.length === 0) {
-             return res.status(500).json({ error: `Failed to generate clips. Error: ${lastErrorMsg.substring(0, 200)}` });
+             jobs.set(jobId, { status: 'error', error: `Failed to generate clips. Error: ${lastErrorMsg.substring(0, 200)}` });
+             return;
         }
 
-        res.json({ clips });
+        jobs.set(jobId, { status: 'completed', clips });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error(`Job ${jobId} failed:`, error);
+        jobs.set(jobId, { status: 'error', error: 'Internal server error' });
     }
+    })();
+});
+
+app.get('/api/status/:jobId', (req, res) => {
+    const job = jobs.get(req.params.jobId);
+    if (!job) return res.status(404).json({ error: 'Job not found' });
+    res.json(job);
 });
 
 app.post('/api/download', async (req, res) => {

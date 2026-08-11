@@ -6,8 +6,8 @@ const os = require('os');
 const isLinux = os.platform() === 'linux';
 const isWindows = os.platform() === 'win32';
 
-const YTDLP_WIN_URL = 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe';
-const YTDLP_LINUX_URL = 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux';
+const YTDLP_WIN_URL = 'https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download/yt-dlp.exe';
+const YTDLP_LINUX_URL = 'https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download/yt-dlp_linux';
 
 const FFMPEG_WIN_URL = 'https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip';
 const FFMPEG_LINUX_URL = 'https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz';
@@ -22,18 +22,14 @@ if (!fs.existsSync(binDir)) {
 const ytdlpBin = isWindows ? 'yt-dlp.exe' : 'yt-dlp';
 const ytdlpPath = path.join(binDir, ytdlpBin);
 
-if (!fs.existsSync(ytdlpPath)) {
-    console.log(`Downloading ${ytdlpBin}...`);
-    if (isWindows) {
-        execSync(`powershell -Command "Invoke-WebRequest -Uri '${YTDLP_WIN_URL}' -OutFile '${ytdlpPath}'"`, { stdio: 'inherit' });
-    } else if (isLinux) {
-        execSync(`curl -L ${YTDLP_LINUX_URL} -o ${ytdlpPath}`, { stdio: 'inherit' });
-        execSync(`chmod a+rx ${ytdlpPath}`, { stdio: 'inherit' });
-    }
-    console.log(`${ytdlpBin} downloaded.`);
-} else {
-    console.log(`${ytdlpBin} already exists.`);
+console.log(`Downloading ${ytdlpBin}...`);
+if (isWindows) {
+    execSync(`powershell -Command "Invoke-WebRequest -Uri '${YTDLP_WIN_URL}' -OutFile '${ytdlpPath}'"`, { stdio: 'inherit' });
+} else if (isLinux) {
+    execSync(`curl -L ${YTDLP_LINUX_URL} -o ${ytdlpPath}`, { stdio: 'inherit' });
+    execSync(`chmod a+rx ${ytdlpPath}`, { stdio: 'inherit' });
 }
+console.log(`${ytdlpBin} downloaded.`);
 
 const ffmpegBin = isWindows ? 'ffmpeg.exe' : 'ffmpeg';
 const ffmpegExePath = path.join(binDir, ffmpegBin);

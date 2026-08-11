@@ -3,6 +3,7 @@ const cors = require('cors');
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const { parseVtt } = require('./vttParser');
 
 const app = express();
@@ -16,8 +17,13 @@ if (!fs.existsSync(clipsDir)) {
 }
 app.use('/clips', express.static(clipsDir));
 
-const YTDLP_BIN = path.join(__dirname, 'bin', 'yt-dlp.exe');
-const FFMPEG_BIN = path.join(__dirname, 'bin', 'ffmpeg.exe');
+const isWindows = os.platform() === 'win32';
+const YTDLP_BIN = path.join(__dirname, 'bin', isWindows ? 'yt-dlp.exe' : 'yt-dlp');
+const FFMPEG_BIN = path.join(__dirname, 'bin', isWindows ? 'ffmpeg.exe' : 'ffmpeg');
+
+// Serve the compiled React app
+const distDir = path.join(__dirname, '..', 'dist');
+app.use(express.static(distDir));
 
 app.post('/api/process', async (req, res) => {
     const { url, offset = 0 } = req.body;
@@ -194,7 +200,12 @@ app.post('/api/download', async (req, res) => {
     });
 });
 
-const PORT = 3001;
+// Fallback to React app
+app.get('*', (req, res) => {
+    res.sendFile(path.join(distDir, 'index.html'));
+});
+
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`Backend server running on http://localhost:${PORT}`);
     console.log(`Make sure you have run setup.js to download yt-dlp and ffmpeg!`);

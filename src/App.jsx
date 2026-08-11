@@ -63,7 +63,7 @@ const ClipCard = ({ clip, index }) => {
   const handleDownload = async () => {
     setIsDownloading(true);
     try {
-      const response = await fetch('http://localhost:3001/api/download', {
+      const response = await fetch('/api/download', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ clipUrl: clip.url, ratio })
@@ -71,7 +71,7 @@ const ClipCard = ({ clip, index }) => {
       const data = await response.json();
       if (data.downloadUrl) {
          const a = document.createElement('a');
-         a.href = `http://localhost:3001${data.downloadUrl}`;
+         a.href = data.downloadUrl;
          a.download = `clip_${index + 1}_${ratio.replace(':','x')}.mp4`;
          a.click();
       } else {
@@ -154,12 +154,13 @@ function App() {
     if (!videoUrl) return;
     setStep(1);
     setIsProcessing(true);
+    setError('');
     
     try {
-      const response = await fetch('http://localhost:3001/api/process', {
+      const response = await fetch('/api/process', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: videoUrl })
+        body: JSON.stringify({ url: videoUrl, offset: 0 })
       });
       
       const data = await response.json();
@@ -167,7 +168,7 @@ function App() {
         setClips(data.clips);
         setStep(2);
       } else {
-        alert(data.error || 'Failed to process video');
+        setError(data.error || 'Failed to process video');
         setStep(0);
       }
     } catch (err) {
@@ -181,7 +182,7 @@ function App() {
   const handleCreateMore = async () => {
     setIsGeneratingMore(true);
     try {
-      const response = await fetch('http://localhost:3001/api/process', {
+      const response = await fetch('/api/process', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: videoUrl, offset: clips.length })

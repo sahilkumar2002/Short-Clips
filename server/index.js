@@ -45,13 +45,16 @@ app.post('/api/process', async (req, res) => {
 
         const clips = [];
         
-        // Add bypass args and cookies if available
+        // Add bypass args or cookies
         const cookiesPath = path.join(__dirname, '..', 'cookies.txt');
-        const ytDlpBaseArgs = [
-            '--extractor-args', 'youtube:player_client=ios,web_safari'
-        ];
+        const ytDlpBaseArgs = [];
+        
         if (fs.existsSync(cookiesPath)) {
+            console.log("Using cookies.txt for authentication.");
             ytDlpBaseArgs.push('--cookies', cookiesPath);
+        } else {
+            console.log("No cookies.txt found, using extractor args spoofing.");
+            ytDlpBaseArgs.push('--extractor-args', 'youtube:player_client=ios,web_safari');
         }
 
         // 1. Download subtitles first

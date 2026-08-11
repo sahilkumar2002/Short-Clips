@@ -52,10 +52,10 @@ app.post('/api/process', async (req, res) => {
         if (fs.existsSync(cookiesPath)) {
             console.log("Using cookies.txt for authentication.");
             ytDlpBaseArgs.push('--cookies', cookiesPath);
-        } else {
-            console.log("No cookies.txt found, using extractor args spoofing.");
-            ytDlpBaseArgs.push('--extractor-args', 'youtube:player_client=ios,web_safari');
         }
+        
+        // Always use client spoofing to avoid desktop n-challenge which requires JS solver
+        ytDlpBaseArgs.push('--extractor-args', 'youtube:player_client=ios,android,web');
 
         // 1. Download subtitles first
         console.log("Fetching auto-subtitles...");
@@ -132,7 +132,7 @@ app.post('/api/process', async (req, res) => {
                     url,
                     '--ffmpeg-location', FFMPEG_BIN,
                     '--download-sections', range.start,
-                    '-f', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best',
+                    '-f', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
                     ...ytDlpBaseArgs,
                     '-o', outputPath
                 ];

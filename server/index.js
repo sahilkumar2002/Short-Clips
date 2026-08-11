@@ -65,8 +65,8 @@ app.post('/api/process', async (req, res) => {
             ytDlpBaseArgs.push('--cookies', cookiesPath);
         }
         
-        // Always use client spoofing to avoid desktop n-challenge which requires JS solver
-        ytDlpBaseArgs.push('--extractor-args', 'youtube:player_client=ios,android,web');
+        // Force Android client to avoid HLS streams (which cause OOM on Render) and avoid Desktop n-challenge
+        ytDlpBaseArgs.push('--extractor-args', 'youtube:player_client=android');
 
         // 1. Download subtitles first
         console.log("Fetching auto-subtitles...");

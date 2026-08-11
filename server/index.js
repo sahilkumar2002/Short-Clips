@@ -117,8 +117,9 @@ app.post('/api/process', async (req, res) => {
             });
         }
 
-        const downloadPromises = timeRanges.map(range => {
-            return new Promise((resolve) => {
+        // Run sequentially to prevent out-of-memory crashes on free-tier servers
+        for (const range of timeRanges) {
+            const clip = await new Promise((resolve) => {
                 const outputPath = path.join(clipsDir, range.name);
                 console.log(`Downloading ${range.name} for range ${range.start}...`);
                 
@@ -142,7 +143,6 @@ app.post('/api/process', async (req, res) => {
 
                 process.on('close', (code) => {
                     if (code === 0) {
-                        // filter subtitles for this clip
                         const clipSubs = subtitles
                             .filter(s => s.start >= range.startSec && s.start <= range.endSec)
                             .map(s => ({
@@ -163,12 +163,11 @@ app.post('/api/process', async (req, res) => {
                     }
                 });
             });
-        });
-
-        const results = await Promise.all(downloadPromises);
-        results.forEach(clip => {
-            if (clip) clips.push(clip);
-        });
+            
+            if (clip) {
+                clips.push(clip);
+            }
+        }
 
         if (clips.length === 0) {
              return res.status(500).json({ error: 'Failed to generate clips. Make sure the video is long enough.' });

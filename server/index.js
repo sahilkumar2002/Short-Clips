@@ -73,8 +73,8 @@ app.post('/api/process', async (req, res) => {
             console.log("Ignoring cookies.txt as it may be flagged by YouTube.");
         }
         
-        // Force iOS client to avoid HLS streams and bypass the latest bot block
-        ytDlpBaseArgs.push('--extractor-args', 'youtube:player_client=ios,web');
+        // Copying the exact bypass from vid-downloader that is proven to work on Render/Railway
+        ytDlpBaseArgs.push('--extractor-args', 'youtube:player_client=android,ios,web_creator,tvembedded');
         ytDlpBaseArgs.push('--rm-cache-dir');
 
         // 1. Download subtitles first

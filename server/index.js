@@ -57,7 +57,22 @@ app.post('/api/process', async (req, res) => {
     // Start background processing
     (async () => {
         try {
-            console.log(`Processing video [${jobId}]: ${url}`);
+            // Rewrite YouTube URL to Invidious proxy to bypass datacenter bot blocks
+            let targetUrl = url;
+            if (targetUrl.includes('youtube.com') || targetUrl.includes('youtu.be')) {
+                let videoId = '';
+                if (targetUrl.includes('youtu.be/')) {
+                    videoId = targetUrl.split('youtu.be/')[1].split('?')[0];
+                } else {
+                    const urlObj = new URL(targetUrl);
+                    videoId = urlObj.searchParams.get('v');
+                }
+                if (videoId) {
+                    targetUrl = `https://invidious.nerdvpn.de/watch?v=${videoId}`;
+                    console.log(`Rewrote URL to proxy: ${targetUrl}`);
+                }
+            }
+            console.log(`Processing video [${jobId}]: ${targetUrl}`);
             
             // Clean up old clips only on first generation
         if (offset === 0) {
@@ -89,7 +104,7 @@ app.post('/api/process', async (req, res) => {
         const subsPath = path.join(clipsDir, 'subtitles');
         await new Promise((resolve) => {
             const subArgs = [
-                url,
+                targetUrl,
                 '--write-auto-subs',
                 '--sub-format', 'vtt',
                 '--sub-langs', 'en',
@@ -156,7 +171,7 @@ app.post('/api/process', async (req, res) => {
                 console.log(`Downloading ${range.name} for range ${range.start}...`);
                 
                 const dlArgs = [
-                    url,
+                    targetUrl,
                     '--ffmpeg-location', FFMPEG_BIN,
                     '--download-sections', range.start,
                     '-f', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',

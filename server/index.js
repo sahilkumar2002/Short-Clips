@@ -174,7 +174,7 @@ app.post('/api/process', async (req, res) => {
                     targetUrl,
                     '--ffmpeg-location', FFMPEG_BIN,
                     '--download-sections', range.start,
-                    '-f', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+                    '-f', 'b[ext=mp4]/best',
                     ...ytDlpBaseArgs,
                     '-o', outputPath
                 ];

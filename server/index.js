@@ -68,12 +68,14 @@ app.post('/api/process', async (req, res) => {
         const ytDlpBaseArgs = [];
         
         if (fs.existsSync(cookiesPath)) {
-            console.log("Using cookies.txt for authentication.");
-            ytDlpBaseArgs.push('--cookies', cookiesPath);
+            // console.log("Using cookies.txt for authentication.");
+            // ytDlpBaseArgs.push('--cookies', cookiesPath);
+            console.log("Ignoring cookies.txt as it may be flagged by YouTube.");
         }
         
-        // Force Android client to avoid HLS streams (which cause OOM on Render) and avoid Desktop n-challenge
-        ytDlpBaseArgs.push('--extractor-args', 'youtube:player_client=android');
+        // Force iOS client to avoid HLS streams and bypass the latest bot block
+        ytDlpBaseArgs.push('--extractor-args', 'youtube:player_client=ios,web');
+        ytDlpBaseArgs.push('--rm-cache-dir');
 
         // 1. Download subtitles first
         console.log("Fetching auto-subtitles...");

@@ -29,9 +29,30 @@ const jobs = new Map();
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
 app.post('/api/process', async (req, res) => {
-    const { url, offset = 0 } = req.body;
+    const { url, offset = 0, recaptchaToken } = req.body;
     if (!url) {
         return res.status(400).json({ error: 'URL is required' });
+    }
+
+    if (offset === 0) {
+        if (!recaptchaToken) {
+            return res.status(401).json({ error: 'reCAPTCHA token is required.' });
+        }
+        
+        const secretKey = process.env.RECAPTCHA_SECRET_KEY || 'dummy_secret_key_for_testing';
+        try {
+            const verifyResponse = await fetch(`https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaToken}`, {
+                method: 'POST'
+            });
+            const verifyData = await verifyResponse.json();
+            
+            if (!verifyData.success) {
+                return res.status(401).json({ error: 'reCAPTCHA verification failed. Please try again.' });
+            }
+        } catch (err) {
+            console.error('reCAPTCHA error:', err);
+            return res.status(500).json({ error: 'Failed to verify reCAPTCHA.' });
+        }
     }
 
     const jobId = generateId();

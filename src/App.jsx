@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
-import { Video, Loader2, Sparkles, Wand2, Subtitles } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import ReCAPTCHA from "react-google-recaptcha";
+import { Video, Loader2, Sparkles, Wand2, Subtitles, CheckCircle2, Clock } from 'lucide-react';
 import './index.css';
 
 const CaptionVideo = ({ clip }) => {
@@ -148,6 +149,8 @@ function App() {
   const [isGeneratingMore, setIsGeneratingMore] = useState(false);
   const [step, setStep] = useState(0); // 0: input, 1: processing, 2: result
   const [error, setError] = useState('');
+  const [recaptchaToken, setRecaptchaToken] = useState(null);
+  const recaptchaRef = useRef(null);
 
   const [clips, setClips] = useState([]);
 
@@ -176,6 +179,10 @@ function App() {
 
   const handleGetClips = async () => {
     if (!videoUrl) return;
+    if (!recaptchaToken) {
+      setError('Please complete the reCAPTCHA to continue.');
+      return;
+    }
     setStep(1);
     setIsProcessing(true);
     setError('');
@@ -184,7 +191,7 @@ function App() {
       const response = await fetch('/api/process', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: videoUrl, offset: 0 })
+        body: JSON.stringify({ url: videoUrl, offset: 0, recaptchaToken })
       });
       
       const data = await response.json();
@@ -259,6 +266,15 @@ function App() {
               </div>
             )}
             
+            <div style={{ marginBottom: '1.5rem' }}>
+              <ReCAPTCHA
+                ref={recaptchaRef}
+                sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"} // dummy key for testing
+                onChange={(token) => setRecaptchaToken(token)}
+                theme="dark"
+              />
+            </div>
+
             <div className="input-container">
               <Video className="input-icon" size={24} />
               <input 

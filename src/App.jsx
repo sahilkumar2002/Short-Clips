@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import ReCAPTCHA from "react-google-recaptcha";
-import { Video, Loader2, Sparkles, Wand2, Subtitles, CheckCircle2, Clock } from 'lucide-react';
+import { Video, Loader2, Sparkles, Wand2, Subtitles, CheckCircle2, Clock, Lock } from 'lucide-react';
 import './index.css';
 
 const CaptionVideo = ({ clip }) => {
@@ -149,8 +148,7 @@ function App() {
   const [isGeneratingMore, setIsGeneratingMore] = useState(false);
   const [step, setStep] = useState(0); // 0: input, 1: processing, 2: result
   const [error, setError] = useState('');
-  const [recaptchaToken, setRecaptchaToken] = useState(null);
-  const recaptchaRef = useRef(null);
+  const [accessCode, setAccessCode] = useState('');
 
   const [clips, setClips] = useState([]);
 
@@ -179,8 +177,8 @@ function App() {
 
   const handleGetClips = async () => {
     if (!videoUrl) return;
-    if (!recaptchaToken) {
-      setError('Please complete the reCAPTCHA to continue.');
+    if (!accessCode) {
+      setError('Please enter the access code to use this generator.');
       return;
     }
     setStep(1);
@@ -191,7 +189,7 @@ function App() {
       const response = await fetch('/api/process', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: videoUrl, offset: 0, recaptchaToken })
+        body: JSON.stringify({ url: videoUrl, offset: 0, accessCode })
       });
       
       const data = await response.json();
@@ -266,12 +264,14 @@ function App() {
               </div>
             )}
             
-            <div style={{ marginBottom: '1.5rem' }}>
-              <ReCAPTCHA
-                ref={recaptchaRef}
-                sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"} // dummy key for testing
-                onChange={(token) => setRecaptchaToken(token)}
-                theme="dark"
+            <div className="input-container" style={{ marginBottom: '1rem', padding: '0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px' }}>
+              <Lock className="input-icon" size={20} style={{ marginLeft: '10px' }} />
+              <input 
+                type="password" 
+                placeholder="Enter Access Code..." 
+                value={accessCode}
+                onChange={(e) => setAccessCode(e.target.value)}
+                style={{ background: 'transparent', border: 'none', color: 'white', padding: '10px', width: '100%', outline: 'none' }}
               />
             </div>
 

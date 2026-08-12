@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Video, Loader2, Sparkles, Wand2, Subtitles, CheckCircle2, Clock, Lock } from 'lucide-react';
+import { Video, Loader2, Sparkles, Wand2, Subtitles, CheckCircle2, Clock, Lock, Upload } from 'lucide-react';
 import './index.css';
 
 const CaptionVideo = ({ clip }) => {
@@ -149,6 +149,7 @@ function App() {
   const [step, setStep] = useState(0); // 0: input, 1: processing, 2: result
   const [error, setError] = useState('');
   const [accessCode, setAccessCode] = useState('');
+  const fileInputRef = useRef(null);
 
   const [clips, setClips] = useState([]);
 
@@ -236,6 +237,48 @@ function App() {
     }
   };
 
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!accessCode) {
+      setError('Please enter the access code before uploading.');
+      return;
+    }
+
+    setStep(1);
+    setIsProcessing(true);
+    setError('');
+
+    const formData = new FormData();
+    formData.append('video', file);
+    formData.append('accessCode', accessCode);
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const data = await response.json();
+      if (data.jobId) {
+        pollStatus(data.jobId, (newClips) => {
+          setClips(newClips);
+          setStep(2);
+          setIsProcessing(false);
+        });
+      } else {
+        setError(data.error || 'Failed to upload video');
+        setStep(0);
+        setIsProcessing(false);
+      }
+    } catch (err) {
+      setError('Failed to connect to backend server for upload.');
+      setStep(0);
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <div className="app-container">
       <nav className="top-nav">
@@ -290,7 +333,14 @@ function App() {
             </div>
 
             <div className="mt-8 text-sm text-secondary" style={{marginTop: '1.5rem', color: 'var(--text-secondary)'}}>
-              or <span style={{textDecoration: 'underline', cursor: 'pointer', color: 'white'}}>Upload files</span>
+              or <span onClick={() => fileInputRef.current?.click()} style={{textDecoration: 'underline', cursor: 'pointer', color: 'white'}}>Upload local file</span>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileUpload} 
+                accept="video/mp4,video/x-m4v,video/*" 
+                style={{ display: 'none' }} 
+              />
             </div>
 
             {/* Removed platform icons as lucide-react lacks them */}

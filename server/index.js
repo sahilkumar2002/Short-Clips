@@ -4,6 +4,7 @@ const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const multer = require('multer');
 const { parseVtt } = require('./vttParser');
 
 const app = express();
@@ -20,6 +21,12 @@ app.use('/clips', express.static(clipsDir));
 const isWindows = os.platform() === 'win32';
 const YTDLP_BIN = path.join(__dirname, 'bin', isWindows ? 'yt-dlp.exe' : 'yt-dlp');
 const FFMPEG_BIN = path.join(__dirname, 'bin', isWindows ? 'ffmpeg.exe' : 'ffmpeg');
+
+// Configure Multer for file uploads
+const upload = multer({ 
+    dest: clipsDir,
+    limits: { fileSize: 500 * 1024 * 1024 } // 500MB limit
+});
 
 // Serve the compiled React app
 const distDir = path.join(__dirname, '..', 'dist');
@@ -214,7 +221,114 @@ app.post('/api/process', async (req, res) => {
     })();
 });
 
+// New endpoint for direct file uploads
+app.post('/api/upload', upload.single('video'), async (req, res) => {
+    const { accessCode } = req.body;
+    const expectedCode = process.env.ACCESS_CODE || 'opus2026';
+    if (!accessCode || accessCode !== expectedCode) {
+        if (req.file) fs.unlinkSync(req.file.path);
+        return res.status(401).json({ error: 'Invalid access code.' });
+    }
+
+    if (!req.file) {
+        return res.status(400).json({ error: 'No video file uploaded' });
+    }
+
+    const jobId = generateId();
+    jobs.set(jobId, { status: 'processing', clips: [], error: null });
+    res.json({ jobId });
+
+    // Process uploaded file in background
+    (async () => {
+        try {
+            console.log(`Processing uploaded video [${jobId}]`);
+            const inputVideoPath = req.file.path;
+            
+            const clips = [];
+            const timeRanges = [];
+            for (let i = 0; i < 3; i++) {
+                const clipNumber = i + 1;
+                const startSec = 10 + ((clipNumber - 1) * 60);
+                
+                const hooks = [
+                    "The undeniable truth about...",
+                    "Why everyone gets this wrong...",
+                    "This one strategy changed everything..."
+                ];
+                
+                timeRanges.push({
+                    name: `uploaded_clip_${jobId}_${clipNumber}.mp4`,
+                    start: startSec,
+                    hook: hooks[i % hooks.length]
+                });
+            }
+
+            for (const range of timeRanges) {
+                const clip = await new Promise((resolve) => {
+                    const outputPath = path.join(clipsDir, range.name);
+                    console.log(`Extracting clip from uploaded file: ${range.name}`);
+                    
+                    // Use ffmpeg directly on the uploaded file
+                    const dlArgs = [
+                        '-y',
+                        '-i', inputVideoPath,
+                        '-ss', range.start.toString(),
+                        '-t', '60',
+                        '-c:v', 'libx264',
+                        '-preset', 'ultrafast',
+                        '-c:a', 'aac',
+                        outputPath
+                    ];
+                    const process = spawn(FFMPEG_BIN, dlArgs);
+                    
+                    let processError = "";
+                    process.stderr.on('data', d => {
+                        processError += d.toString();
+                    });
+
+                    process.on('close', (code) => {
+                        if (code === 0 && fs.existsSync(outputPath)) {
+                            resolve({
+                                url: `/clips/${range.name}`,
+                                hook: range.hook,
+                                score: Math.floor(Math.random() * 10) + 90,
+                                subtitles: [] // No auto-subs for uploaded videos yet
+                            });
+                        } else {
+                            console.error(`Failed to process ${range.name}: ${processError}`);
+                            resolve(null);
+                        }
+                    });
+                });
+                
+                if (clip) clips.push(clip);
+            }
+            
+            // Clean up the uploaded original file
+            fs.unlinkSync(inputVideoPath);
+
+            if (clips.length === 0) {
+                jobs.set(jobId, { status: 'error', error: 'Failed to generate clips from uploaded video.' });
+                return;
+            }
+
+            jobs.set(jobId, { status: 'completed', clips });
+            console.log(`Job [${jobId}] completed with ${clips.length} clips.`);
+
+        } catch (error) {
+            console.error(`Job [${jobId}] failed:`, error);
+            jobs.set(jobId, { status: 'error', error: 'Internal server error processing video.' });
+        }
+    })();
+});
+
 app.get('/api/status/:jobId', (req, res) => {
+    const job = jobs.get(req.params.jobId);
+    if (!job) return res.status(404).json({ error: 'Job not found' });
+    res.json(job);
+});
+
+app.get('/api/job/:jobId', (req, res) => {
     const job = jobs.get(req.params.jobId);
     if (!job) return res.status(404).json({ error: 'Job not found' });
     res.json(job);

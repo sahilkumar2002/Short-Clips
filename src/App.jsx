@@ -24,7 +24,7 @@ const CaptionVideo = ({ clip }) => {
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <video 
-        src={`http://localhost:3001${clip.url}`} 
+        src={clip.url.startsWith('http') ? clip.url : (window.location.hostname === 'localhost' ? `http://localhost:3001${clip.url}` : clip.url)} 
         controls
         style={{width: '100%', height: '100%', objectFit: 'cover'}}
         onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}

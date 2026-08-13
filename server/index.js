@@ -293,15 +293,18 @@ app.post('/api/upload', upload.single('video'), async (req, res) => {
                     const outputPath = path.join(clipsDir, range.name);
                     console.log(`Extracting clip from uploaded file: ${range.name}`);
                     
-                    // Use ffmpeg directly on the uploaded file
+                    // Use ffmpeg directly on the uploaded file with high quality and web compatibility
                     const dlArgs = [
                         '-y',
                         '-i', inputVideoPath,
                         '-ss', range.start.toString(),
                         '-t', '60',
                         '-c:v', 'libx264',
-                        '-preset', 'ultrafast',
+                        '-crf', '18',          // High quality
+                        '-preset', 'fast',     // Better quality than ultrafast
+                        '-pix_fmt', 'yuv420p', // Ensure web compatibility (fixes 0:00 black screen issue)
                         '-c:a', 'aac',
+                        '-b:a', '192k',        // High quality audio
                         outputPath
                     ];
                     const process = spawn(FFMPEG_BIN, dlArgs);

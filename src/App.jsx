@@ -148,7 +148,6 @@ function App() {
   const [isGeneratingMore, setIsGeneratingMore] = useState(false);
   const [step, setStep] = useState(0); // 0: input, 1: processing, 2: result
   const [error, setError] = useState('');
-  const [accessCode, setAccessCode] = useState('');
   const fileInputRef = useRef(null);
 
   const [clips, setClips] = useState([]);
@@ -178,10 +177,6 @@ function App() {
 
   const handleGetClips = async () => {
     if (!videoUrl) return;
-    if (!accessCode) {
-      setError('Please enter the access code to use this generator.');
-      return;
-    }
     setStep(1);
     setIsProcessing(true);
     setError('');
@@ -190,7 +185,7 @@ function App() {
       const response = await fetch('/api/process', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: videoUrl, offset: 0, accessCode })
+        body: JSON.stringify({ url: videoUrl, offset: 0 })
       });
       
       const data = await response.json();
@@ -241,18 +236,12 @@ function App() {
     const file = event.target.files[0];
     if (!file) return;
 
-    if (!accessCode) {
-      setError('Please enter the access code before uploading.');
-      return;
-    }
-
     setStep(1);
     setIsProcessing(true);
     setError('');
 
     const formData = new FormData();
     formData.append('video', file);
-    formData.append('accessCode', accessCode);
 
     try {
       const response = await fetch('/api/upload', {
@@ -306,17 +295,6 @@ function App() {
                 {error}
               </div>
             )}
-            
-            <div className="input-container" style={{ marginBottom: '1rem', padding: '0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px' }}>
-              <Lock className="input-icon" size={20} style={{ marginLeft: '10px' }} />
-              <input 
-                type="password" 
-                placeholder="Enter Access Code..." 
-                value={accessCode}
-                onChange={(e) => setAccessCode(e.target.value)}
-                style={{ background: 'transparent', border: 'none', color: 'white', padding: '10px', width: '100%', outline: 'none' }}
-              />
-            </div>
 
             <div className="input-container">
               <Video className="input-icon" size={24} />

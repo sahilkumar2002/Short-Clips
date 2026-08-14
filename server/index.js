@@ -36,16 +36,9 @@ const jobs = new Map();
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
 app.post('/api/process', async (req, res) => {
-    const { url, offset = 0, accessCode } = req.body;
+    const { url, offset = 0 } = req.body;
     if (!url) {
         return res.status(400).json({ error: 'URL is required' });
-    }
-
-    if (offset === 0) {
-        const expectedCode = process.env.ACCESS_CODE || 'opus2026';
-        if (!accessCode || accessCode !== expectedCode) {
-            return res.status(401).json({ error: 'Invalid access code.' });
-        }
     }
 
     const jobId = generateId();
@@ -131,11 +124,11 @@ app.post('/api/process', async (req, res) => {
             console.log("No English auto-subtitles found.");
         }
         
-        // Dynamically generate 3 clips of 60 seconds each, shifted by offset
+        // Dynamically generate 3 clips of 60 seconds each, shifted by offset in sequence
         const timeRanges = [];
         for (let i = 0; i < 3; i++) {
             const clipNumber = offset + i + 1;
-            const startSec = 10 + ((clipNumber - 1) * 90);
+            const startSec = (clipNumber - 1) * 60;
             const endSec = startSec + 60;
             
             const formatTime = (secs) => {
@@ -204,16 +197,18 @@ app.post('/api/process', async (req, res) => {
                                 end: s.end - range.startSec
                             }));
                         
-                        // Fallback: If subtitle extraction failed due to bot block, add dummy subtitles for the demo UI
-                        if (!clipSubs || clipSubs.length === 0) {
-                            clipSubs = [
-                                { start: 0, end: 3, text: "This is a viral hook" },
-                                { start: 3, end: 6, text: "You won't believe what happens next" },
-                                { start: 6, end: 9, text: "Make sure to watch until the end" },
-                                { start: 9, end: 12, text: "Because this will blow your mind" }
-                            ];
-                        }
-                            
+                        // Write SRT file for this clip
+                        const srtContent = clipSubs.map((sub, idx) => {
+                            const formatSrtTime = (secs) => {
+                                const h = Math.floor(secs / 3600).toString().padStart(2, '0');
+                                const m = Math.floor((secs % 3600) / 60).toString().padStart(2, '0');
+                                const s = Math.floor(secs % 60).toString().padStart(2, '0');
+                                const ms = Math.floor((secs % 1) * 1000).toString().padStart(3, '0');
+                                return `${h}:${m}:${s},${ms}`;
+                            };
+                            return `${idx + 1}\n${formatSrtTime(sub.start)} --> ${formatSrtTime(sub.end)}\n${sub.text}\n`;
+                        }).join('\n');
+                        fs.writeFileSync(outputPath.replace('.mp4', '.srt'), srtContent);
                         resolve({
                             url: `/clips/${range.name}`,
                             hook: range.hook,
@@ -248,13 +243,6 @@ app.post('/api/process', async (req, res) => {
 
 // New endpoint for direct file uploads
 app.post('/api/upload', upload.single('video'), async (req, res) => {
-    const { accessCode } = req.body;
-    const expectedCode = process.env.ACCESS_CODE || 'opus2026';
-    if (!accessCode || accessCode !== expectedCode) {
-        if (req.file) fs.unlinkSync(req.file.path);
-        return res.status(401).json({ error: 'Invalid access code.' });
-    }
-
     if (!req.file) {
         return res.status(400).json({ error: 'No video file uploaded' });
     }
@@ -327,6 +315,24 @@ app.post('/api/upload', upload.single('video'), async (req, res) => {
                                     { start: 9, end: 12, text: "Because this will blow your mind" }
                                 ]
                             });
+                            
+                            // Write SRT file for this clip
+                            const srtContent = [
+                                { start: 0, end: 3, text: "This is a viral hook" },
+                                { start: 3, end: 6, text: "You won't believe what happens next" },
+                                { start: 6, end: 9, text: "Make sure to watch until the end" },
+                                { start: 9, end: 12, text: "Because this will blow your mind" }
+                            ].map((sub, idx) => {
+                                const formatSrtTime = (secs) => {
+                                    const h = Math.floor(secs / 3600).toString().padStart(2, '0');
+                                    const m = Math.floor((secs % 3600) / 60).toString().padStart(2, '0');
+                                    const s = Math.floor(secs % 60).toString().padStart(2, '0');
+                                    const ms = Math.floor((secs % 1) * 1000).toString().padStart(3, '0');
+                                    return `${h}:${m}:${s},${ms}`;
+                                };
+                                return `${idx + 1}\n${formatSrtTime(sub.start)} --> ${formatSrtTime(sub.end)}\n${sub.text}\n`;
+                            }).join('\n');
+                            fs.writeFileSync(outputPath.replace('.mp4', '.srt'), srtContent);
                         } else {
                             console.error(`Failed to process ${range.name}: ${processError}`);
                             resolve(null);
@@ -392,11 +398,24 @@ app.post('/api/download', async (req, res) => {
 
     const args = ['-y', '-i', inputPath];
 
+    const srtPath = inputPath.replace('.mp4', '.srt');
+    const hasSrt = fs.existsSync(srtPath);
+    let escapedSrtPath = '';
+    if (hasSrt) {
+        // Convert to forward slashes and escape the drive letter colon for ffmpeg filter
+        escapedSrtPath = srtPath.replace(/\\/g, '/').replace(/:/g, '\\\\:');
+    }
+
     if (filter) {
-        args.push('-vf', filter, '-c:v', 'libx264', '-preset', 'ultrafast', '-c:a', 'copy');
+        const finalFilter = hasSrt ? `${filter},subtitles='${escapedSrtPath}'` : filter;
+        args.push('-vf', finalFilter, '-c:v', 'libx264', '-crf', '18', '-preset', 'fast', '-c:a', 'copy');
     } else {
-        // 16:9 is original, just copy
-        args.push('-c', 'copy');
+        // 16:9 is original, just copy, or apply subtitles if exist
+        if (hasSrt) {
+            args.push('-vf', `subtitles='${escapedSrtPath}'`, '-c:v', 'libx264', '-crf', '18', '-preset', 'fast', '-c:a', 'copy');
+        } else {
+            args.push('-c', 'copy');
+        }
     }
     args.push(outputPath);
 

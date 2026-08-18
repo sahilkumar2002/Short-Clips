@@ -352,11 +352,13 @@ function App() {
                   <ClipCard key={index} clip={clip} index={index} />
                 ))}
              </div>
-             <div style={{marginTop: '3rem'}}>
-               <button className="btn btn-secondary" onClick={handleCreateMore} disabled={isGeneratingMore}>
-                 {isGeneratingMore ? <><Loader2 size={18} className="spin" style={{display:'inline', marginRight:'8px'}} /> Generating...</> : "Create more clips"}
-               </button>
-             </div>
+             {videoUrl && (
+               <div style={{marginTop: '3rem'}}>
+                 <button className="btn btn-secondary" onClick={handleCreateMore} disabled={isGeneratingMore}>
+                   {isGeneratingMore ? <><Loader2 size={18} className="spin" style={{display:'inline', marginRight:'8px'}} /> Generating...</> : "Create more clips"}
+                 </button>
+               </div>
+             )}
           </div>
         )}
       </main>

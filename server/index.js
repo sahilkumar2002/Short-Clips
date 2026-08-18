@@ -167,7 +167,7 @@ app.post('/api/process', async (req, res) => {
                     targetUrl,
                     '--ffmpeg-location', FFMPEG_BIN,
                     '--download-sections', range.start,
-                    '-f', 'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best',
+                    '-f', 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best',
                     ...ytDlpBaseArgs,
                     '-o', outputPath
                 ];
@@ -293,15 +293,10 @@ app.post('/api/upload', upload.single('video'), async (req, res) => {
                     // Use ffmpeg directly on the uploaded file with high quality and web compatibility
                     const dlArgs = [
                         '-y',
-                        '-i', inputVideoPath,
                         '-ss', range.start.toString(),
+                        '-i', inputVideoPath,
                         '-t', '60',
-                        '-c:v', 'libx264',
-                        '-crf', '18',          // High quality
-                        '-preset', 'superfast',// Very fast generation
-                        '-pix_fmt', 'yuv420p', // Ensure web compatibility (fixes 0:00 black screen issue)
-                        '-c:a', 'aac',
-                        '-b:a', '192k',        // High quality audio
+                        '-c', 'copy',          // Instant stream copy, no re-encoding
                         outputPath
                     ];
                     const process = spawn(FFMPEG_BIN, dlArgs);
@@ -418,11 +413,11 @@ app.post('/api/download', async (req, res) => {
 
     if (filter) {
         const finalFilter = hasSrt ? `${filter},subtitles='${escapedSrtPath}'` : filter;
-        args.push('-vf', finalFilter, '-c:v', 'libx264', '-crf', '18', '-preset', 'superfast', '-pix_fmt', 'yuv420p', '-c:a', 'copy');
+        args.push('-vf', finalFilter, '-c:v', 'libx264', '-crf', '18', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p', '-c:a', 'copy');
     } else {
         // 16:9 is original, just copy, or apply subtitles if exist
         if (hasSrt) {
-            args.push('-vf', `subtitles='${escapedSrtPath}'`, '-c:v', 'libx264', '-crf', '18', '-preset', 'superfast', '-pix_fmt', 'yuv420p', '-c:a', 'copy');
+            args.push('-vf', `subtitles='${escapedSrtPath}'`, '-c:v', 'libx264', '-crf', '18', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p', '-c:a', 'copy');
         } else {
             args.push('-c', 'copy');
         }

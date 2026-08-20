@@ -124,9 +124,9 @@ app.post('/api/process', async (req, res) => {
             console.log("No English auto-subtitles found.");
         }
         
-        // Dynamically generate 3 clips of 60 seconds each, shifted by offset in sequence
+        // Dynamically generate 6 clips of 60 seconds each, shifted by offset in sequence
         const timeRanges = [];
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 6; i++) {
             const clipNumber = offset + i + 1;
             const startSec = (clipNumber - 1) * 60;
             const endSec = startSec + 60;
@@ -157,38 +157,61 @@ app.post('/api/process', async (req, res) => {
 
         let lastErrorMsg = "";
         
-        // Run in parallel for maximum speed
+        // Single master download to prevent YouTube 429 Too Many Requests IP bans
+        const masterStartSec = timeRanges[0].startSec;
+        const masterEndSec = timeRanges[timeRanges.length - 1].endSec;
+        const masterRangeStr = `*${formatTime(masterStartSec)}-${formatTime(masterEndSec)}`;
+        const masterFile = path.join(clipsDir, `master_${jobId}.mp4`);
+        
+        const masterSuccess = await new Promise((resolve) => {
+            console.log(`Downloading master chunk ${masterRangeStr}...`);
+            const dlArgs = [
+                targetUrl,
+                '--ffmpeg-location', FFMPEG_BIN,
+                '--download-sections', masterRangeStr,
+                '-f', 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best',
+                ...ytDlpBaseArgs,
+                '-o', masterFile
+            ];
+            
+            const process = spawn(YTDLP_BIN, dlArgs);
+            process.stdout.on('data', d => console.log(`[master stdout]: ${d}`));
+            process.stderr.on('data', d => {
+                const errStr = d.toString();
+                console.error(`[master stderr]: ${errStr}`);
+                lastErrorMsg += errStr;
+            });
+            process.on('close', (code) => resolve(code === 0 && fs.existsSync(masterFile)));
+            process.on('error', (err) => { lastErrorMsg = err.toString(); resolve(false); });
+        });
+
+        if (!masterSuccess) {
+            jobs.set(jobId, { status: 'error', error: `Failed to download video chunk. Error: ${lastErrorMsg.substring(0, 200)}` });
+            return;
+        }
+
+        // Fast parallel split using ffmpeg stream copy
         const clipPromises = timeRanges.map(range => {
             return new Promise((resolve) => {
                 const outputPath = path.join(clipsDir, range.name);
-                console.log(`Downloading ${range.name} for range ${range.start}...`);
+                // Offset start relative to master file
+                const relativeStart = range.startSec - masterStartSec;
                 
-                const dlArgs = [
-                    targetUrl,
-                    '--ffmpeg-location', FFMPEG_BIN,
-                    '--download-sections', range.start,
-                    '-f', 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best',
-                    ...ytDlpBaseArgs,
-                    '-o', outputPath
+                const splitArgs = [
+                    '-y',
+                    '-ss', relativeStart.toString(),
+                    '-i', masterFile,
+                    '-t', '60',
+                    '-c', 'copy',
+                    outputPath
                 ];
-                const process = spawn(YTDLP_BIN, dlArgs);
                 
-                let processError = "";
-                process.stdout.on('data', d => console.log(`[${range.name} stdout]: ${d}`));
-                process.stderr.on('data', d => {
-                    const errStr = d.toString();
-                    console.error(`[${range.name} stderr]: ${errStr}`);
-                    processError += errStr;
-                });
-
-                process.on('error', (err) => {
-                    console.error('Error spawning yt-dlp for download:', err);
-                    lastErrorMsg = err.toString();
-                    resolve(null);
-                });
-
-                process.on('close', (code) => {
-                    if (code === 0) {
+                const splitProc = spawn(FFMPEG_BIN, splitArgs);
+                let splitErr = "";
+                splitProc.stderr.on('data', d => splitErr += d.toString());
+                
+                splitProc.on('close', (code) => {
+                    if (code === 0 && fs.existsSync(outputPath)) {
                         let clipSubs = subtitles
                             .filter(s => s.start >= range.startSec && s.start <= range.endSec)
                             .map(s => ({
@@ -197,7 +220,6 @@ app.post('/api/process', async (req, res) => {
                                 end: s.end - range.startSec
                             }));
                         
-                        // Fallback: If subtitle extraction failed due to bot block, add dummy subtitles for the demo UI
                         if (!clipSubs || clipSubs.length === 0) {
                             clipSubs = [
                                 { start: 0, end: 3, text: "This is a viral hook" },
@@ -207,7 +229,6 @@ app.post('/api/process', async (req, res) => {
                             ];
                         }
                         
-                        // Write SRT file for this clip
                         const srtContent = clipSubs.map((sub, idx) => {
                             const formatSrtTime = (secs) => {
                                 const h = Math.floor(secs / 3600).toString().padStart(2, '0');
@@ -219,6 +240,7 @@ app.post('/api/process', async (req, res) => {
                             return `${idx + 1}\n${formatSrtTime(sub.start)} --> ${formatSrtTime(sub.end)}\n${sub.text}\n`;
                         }).join('\n');
                         fs.writeFileSync(outputPath.replace('.mp4', '.srt'), srtContent);
+                        
                         resolve({
                             url: `/clips/${range.name}`,
                             hook: range.hook,
@@ -226,8 +248,7 @@ app.post('/api/process', async (req, res) => {
                             subtitles: clipSubs
                         });
                     } else {
-                        console.log(`Failed to process ${range.name}`);
-                        if (processError && !lastErrorMsg) lastErrorMsg = processError;
+                        console.error(`Failed to split ${range.name}: ${splitErr}`);
                         resolve(null);
                     }
                 });
@@ -235,6 +256,9 @@ app.post('/api/process', async (req, res) => {
         });
 
         const generatedClips = await Promise.all(clipPromises);
+        
+        // Cleanup master file
+        if (fs.existsSync(masterFile)) fs.unlinkSync(masterFile);
         const validClips = generatedClips.filter(c => c !== null);
         
         if (validClips.length === 0) {
@@ -268,7 +292,7 @@ app.post('/api/upload', upload.single('video'), async (req, res) => {
             
             const clips = [];
             const timeRanges = [];
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 6; i++) {
                 const clipNumber = i + 1;
                 const startSec = 10 + ((clipNumber - 1) * 60);
                 

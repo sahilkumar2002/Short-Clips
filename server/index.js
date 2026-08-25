@@ -294,7 +294,7 @@ app.post('/api/upload', upload.single('video'), async (req, res) => {
             const timeRanges = [];
             for (let i = 0; i < 6; i++) {
                 const clipNumber = i + 1;
-                const startSec = 10 + ((clipNumber - 1) * 60);
+                const startSec = (clipNumber - 1) * 60; // Start at 0, 60, 120...
                 
                 const hooks = [
                     "The undeniable truth about...",

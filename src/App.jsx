@@ -225,10 +225,11 @@ function App() {
   const [videoUrl, setVideoUrl] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isGeneratingMore, setIsGeneratingMore] = useState(false);
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(0); 
+  const [clips, setClips] = useState([]);
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
-  const [clips, setClips] = useState([]);
+  const urlInputRef = useRef(null);
 
   const pollStatus = async (jobId, onComplete) => {
     try {
@@ -252,7 +253,11 @@ function App() {
   };
 
   const handleGetClips = async () => {
-    if (!videoUrl) return;
+    if (!videoUrl && !fileInputRef.current?.files?.length) {
+      setError('Please paste a video link or upload a file');
+      urlInputRef.current?.focus();
+      return;
+    }
     setStep(1);
     setIsProcessing(true);
     setError('');
@@ -459,6 +464,7 @@ function App() {
                 <div className="search-wrapper">
                   <div className="search-input-container">
                     <input 
+                      ref={urlInputRef}
                       type="text" 
                       placeholder="Paste a video link or upload to generate AI subtitles" 
                       value={videoUrl}
@@ -495,12 +501,12 @@ function App() {
 
                 {/* Tools Grid matching screenshot */}
                 <div className="tools-grid">
-                  <div className="tool-card">
+                  <div className="tool-card" onClick={handleGetClips}>
                     <Scissors size={32} />
                     <span className="tool-card-title">AI Clipping</span>
                   </div>
-                  <div className="tool-card">
-                    <Search size={32} />
+                  <div className="tool-card tool-card-highlighted">
+                    <Search size={32} color="var(--accent-green)" />
                     <span className="tool-card-title">Find Moments</span>
                   </div>
                   <div className="tool-card">
@@ -536,21 +542,21 @@ function App() {
                   <div className="tool-card">
                     <span className="tool-badge">New</span>
                     <Activity size={32} />
-                    <span className="tool-card-title">Activity Score</span>
+                    <span className="tool-card-title">Speech Enhancer</span>
                   </div>
                   <div className="tool-card">
                     <span className="tool-badge free">Free</span>
                     <Crop size={32} />
-                    <span className="tool-card-title">Smart Crop</span>
+                    <span className="tool-card-title">AI Reframe</span>
                   </div>
                   <div className="tool-card">
                     <span className="tool-badge">New</span>
                     <ImageIcon size={32} />
-                    <span className="tool-card-title">AI Images</span>
+                    <span className="tool-card-title">AI Thumbnail</span>
                   </div>
                   <div className="tool-card">
                     <Sparkles size={32} />
-                    <span className="tool-card-title">Enhance Quality</span>
+                    <span className="tool-card-title">AI Hook</span>
                   </div>
                 </div>
 

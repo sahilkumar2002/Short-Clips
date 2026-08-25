@@ -307,6 +307,15 @@ body {
   background: #1a1c1e;
 }
 
+.tool-card-highlighted {
+  background: radial-gradient(circle at top left, rgba(30,215,96,0.3) 0%, var(--sidebar-bg) 60%);
+  border-color: rgba(30, 215, 96, 0.4);
+}
+.tool-card-highlighted:hover {
+  background: radial-gradient(circle at top left, rgba(30,215,96,0.4) 0%, #1a1c1e 60%);
+  border-color: rgba(30, 215, 96, 0.6);
+}
+
 .tool-card-title {
   font-size: 0.9rem;
   font-weight: 500;

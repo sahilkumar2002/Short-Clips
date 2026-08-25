@@ -328,6 +328,15 @@ function App() {
 
   const handleGetClips = () => handleProcess('AI Clipping');
 
+  const handleCreateMore = async () => {
+    setIsGeneratingMore(true);
+    // Add logic to generate more clips if needed
+    // For now we'll just simulate a delay or re-run the process
+    setTimeout(() => {
+      setIsGeneratingMore(false);
+    }, 2000);
+  };
+
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;

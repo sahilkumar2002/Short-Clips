@@ -4,7 +4,7 @@ import {
   Home, Library, Calendar, Palette, Wallet, Gift, Code, Settings,
   Globe, ChevronDown, Bell, Crown, MessageSquare, MessageCircle,
   PlayCircle, Link, Copy, X, ArrowRight,
-  Scissors, Search, Gamepad2, Edit3, FileText, FileAudio, Type, Activity, Crop, Image as ImageIcon
+  Scissors, Search, Gamepad2, Edit3, FileText, FileAudio, Type, Activity, Crop, Image as ImageIcon, MoreHorizontal
 } from 'lucide-react';
 import './index.css';
 
@@ -139,7 +139,89 @@ const ClipCard = ({ clip, index }) => {
   );
 }
 
+const LibraryView = () => {
+  const projects = [
+    {
+      id: 1,
+      thumbnail: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      isNew: true,
+      expiresIn: '30 days',
+      duration: '00:12:13',
+      title: 'Demo Project',
+      source: 'YouTube • Neal Brennan',
+      category: 'AI Clipping'
+    },
+    {
+      id: 2,
+      thumbnail: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      isNew: true,
+      expiresIn: '30 days',
+      duration: '00:12:53',
+      title: 'Demo Project',
+      source: 'Twitch',
+      category: 'Game Clipping'
+    },
+    {
+      id: 3,
+      thumbnail: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      isNew: true,
+      expiresIn: '30 days',
+      duration: '00:09:42',
+      title: 'Demo Project',
+      source: 'YouTube • CrashCourse',
+      category: 'Video Summary'
+    }
+  ];
+
+  return (
+    <div style={{ padding: '0 2rem', width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
+      <div className="library-nav">
+        <div className="library-nav-item active">Video</div>
+        <div className="library-nav-item">Favorite</div>
+        <div className="library-nav-item">Edited</div>
+        <div className="library-nav-item">Exported</div>
+      </div>
+
+      <div className="library-search-container">
+        <div className="library-search-dropdown">
+          All <ChevronDown size={14} />
+        </div>
+        <div className="library-search-input">
+          <input type="text" placeholder="Search library..." />
+          <Search size={18} color="var(--text-secondary)" />
+        </div>
+      </div>
+
+      <div className="library-date-sep">2026-08-25</div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+        {projects.map(proj => (
+          <div key={proj.id} className="project-card">
+            <div className="project-thumbnail-wrapper">
+              <img src={proj.thumbnail} alt={proj.title} />
+              {proj.isNew && <div className="project-badge-new">new</div>}
+              <div className="project-overlay-bottom">
+                <div className="project-expires">Expires in {proj.expiresIn}</div>
+                <div className="project-duration">{proj.duration}</div>
+              </div>
+            </div>
+            <div className="project-info">
+              <div className="project-title">{proj.title}</div>
+              <div className="project-source">{proj.source}</div>
+              <div className="project-footer">
+                <div className="project-category">{proj.category}</div>
+                <MoreHorizontal className="project-menu-btn" size={20} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 function App() {
+  const [activeTab, setActiveTab] = useState('home');
   const [videoUrl, setVideoUrl] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isGeneratingMore, setIsGeneratingMore] = useState(false);
@@ -276,11 +358,11 @@ function App() {
       <div className="main-body">
         {/* Left Sidebar */}
         <div className="sidebar">
-          <div className="sidebar-item active">
+          <div className={`sidebar-item ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
             <Home />
             <span>Home</span>
           </div>
-          <div className="sidebar-item">
+          <div className={`sidebar-item ${activeTab === 'library' ? 'active' : ''}`} onClick={() => setActiveTab('library')}>
             <Library />
             <span>Library</span>
           </div>
@@ -352,8 +434,14 @@ function App() {
 
           {/* Main Scrollable Content */}
           <div className="main-scroll-area">
-            {step === 0 && (
-              <div className="animate-slide-up" style={{width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+            {activeTab === 'library' ? (
+              <div className="animate-slide-up">
+                <LibraryView />
+              </div>
+            ) : (
+              <>
+                {step === 0 && (
+                  <div className="animate-slide-up" style={{width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
                 
                 <h1 className="hero-title">
                   <span className="gradient-text">Discover, Create, Share</span>
@@ -503,6 +591,8 @@ function App() {
                    </div>
                  )}
               </div>
+            )}
+              </>
             )}
           </div>
         </div>

@@ -1,15 +1,19 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Video, Loader2, Sparkles, Wand2, Subtitles, CheckCircle2, Clock, Lock, Upload } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { 
+  Video, Loader2, Sparkles, Subtitles, UploadCloud, 
+  Home, Library, Calendar, Palette, Wallet, Gift, Code, Settings,
+  Globe, ChevronDown, Bell, Crown, MessageSquare, MessageCircle,
+  PlayCircle, Link, Copy, X, ArrowRight,
+  Scissors, Search, Gamepad2, Edit3, FileText, FileAudio, Type, Activity, Crop, Image as ImageIcon
+} from 'lucide-react';
 import './index.css';
 
 const CaptionVideo = ({ clip }) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [showSubtitles, setShowSubtitles] = useState(true);
   
-  // Use real auto-generated subtitles from backend
   const subtitles = clip.subtitles && clip.subtitles.length > 0 ? clip.subtitles : [];
 
-  // Helper to highlight random words for the "Opus" look
   const highlightText = (text) => {
     const words = text.split(' ');
     if (words.length > 2) {
@@ -33,8 +37,8 @@ const CaptionVideo = ({ clip }) => {
         onClick={() => setShowSubtitles(!showSubtitles)}
         style={{
           position: 'absolute', top: '10px', right: '10px', zIndex: 20,
-          background: 'rgba(0,0,0,0.6)', color: showSubtitles ? '#4ADE80' : '#fff',
-          border: showSubtitles ? '1px solid #4ADE80' : '1px solid #fff',
+          background: 'rgba(0,0,0,0.6)', color: showSubtitles ? 'var(--accent-green)' : '#fff',
+          border: showSubtitles ? '1px solid var(--accent-green)' : '1px solid #fff',
           borderRadius: '8px', padding: '0.4rem',
           cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}
@@ -85,13 +89,7 @@ const ClipCard = ({ clip, index }) => {
   };
 
   return (
-    <div style={{
-      backgroundColor: 'var(--panel-bg)',
-      borderRadius: '16px',
-      overflow: 'hidden',
-      border: '1px solid var(--border-color)',
-      textAlign: 'left'
-    }}>
+    <div className="clip-card">
       <div style={{
         aspectRatio: getAspectRatioString(ratio),
         backgroundColor: '#000',
@@ -102,13 +100,13 @@ const ClipCard = ({ clip, index }) => {
             position: 'absolute', top: '1rem', left: '1rem', zIndex: 10,
             background: 'rgba(0,0,0,0.6)', padding: '0.2rem 0.6rem',
             borderRadius: '999px', fontSize: '0.8rem', fontWeight: 'bold',
-            color: '#4ADE80', border: '1px solid #4ADE80'
+            color: 'var(--accent-green)', border: '1px solid var(--accent-green)'
          }}>{clip.score} Score</div>
          <CaptionVideo clip={clip} />
       </div>
       <div style={{padding: '1.5rem'}}>
-        <h3 style={{fontSize: '1.2rem', marginBottom: '0.5rem'}}>Viral Hook #{index + 1}</h3>
-        <p style={{color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem'}}>
+        <h3 style={{fontSize: '1.1rem', marginBottom: '0.5rem', fontWeight: 600}}>Viral Hook #{index + 1}</h3>
+        <p style={{color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem'}}>
           "{clip.hook}"
         </p>
         
@@ -118,10 +116,10 @@ const ClipCard = ({ clip, index }) => {
               key={r}
               onClick={() => setRatio(r)}
               style={{
-                background: ratio === r ? '#4ADE80' : 'rgba(255,255,255,0.1)',
+                background: ratio === r ? 'var(--accent-green)' : 'rgba(255,255,255,0.1)',
                 color: ratio === r ? '#000' : '#fff',
                 border: 'none', borderRadius: '4px', padding: '0.3rem 0.6rem',
-                cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold'
+                cursor: 'pointer', fontSize: '0.75rem', fontWeight: 'bold'
               }}
             >
               {r}
@@ -130,12 +128,11 @@ const ClipCard = ({ clip, index }) => {
         </div>
 
         <button 
-          className="btn btn-secondary" 
-          style={{width: '100%'}} 
+          style={{width: '100%', background: 'var(--sidebar-bg)', color: '#fff', border: '1px solid var(--border-color)', padding: '0.6rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center'}}
           onClick={handleDownload}
           disabled={isDownloading}
         >
-          {isDownloading ? <><Loader2 size={16} className="spin" style={{display:'inline', marginRight:'8px'}} /> Processing Crop...</> : `Download HD (${ratio})`}
+          {isDownloading ? <><Loader2 size={16} className="spin" style={{marginRight:'8px'}} /> Processing...</> : `Download (${ratio})`}
         </button>
       </div>
     </div>
@@ -146,10 +143,9 @@ function App() {
   const [videoUrl, setVideoUrl] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isGeneratingMore, setIsGeneratingMore] = useState(false);
-  const [step, setStep] = useState(0); // 0: input, 1: processing, 2: result
+  const [step, setStep] = useState(0);
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
-
   const [clips, setClips] = useState([]);
 
   const pollStatus = async (jobId, onComplete) => {
@@ -166,11 +162,9 @@ function App() {
         setIsProcessing(false);
         setIsGeneratingMore(false);
       } else {
-        // still processing
         setTimeout(() => pollStatus(jobId, onComplete), 3000);
       }
     } catch (err) {
-      // If network fails, keep trying (server might be rebooting or unreachable briefly)
       setTimeout(() => pollStatus(jobId, onComplete), 3000);
     }
   };
@@ -269,99 +263,255 @@ function App() {
   };
 
   return (
-    <div className="app-container">
-      <nav className="top-nav">
-        <div className="logo flex items-center gap-2">
-          <Sparkles className="text-white" size={24} />
-          <span>ClipGenius</span>
-        </div>
-        <div className="nav-actions">
-          <button className="btn btn-secondary mr-4" style={{border: 'none'}}>Pricing</button>
-          <button className="btn btn-secondary mr-4" style={{border: 'none'}}>Login</button>
-          <button className="btn btn-primary" style={{padding: '0.5rem 1rem', fontSize: '0.9rem'}}>Sign up</button>
-        </div>
-      </nav>
+    <div className="app-layout">
+      
+      {/* Banner (matching screenshot) */}
+      <div className="top-banner">
+        <span className="banner-timer">71 : 55 : 07</span>
+        Limited-Time Offer: Get <span className="banner-link">65% OFF</span> and unlock premium access now!
+        <button className="btn-secondary" style={{padding: '0.2rem 1rem', borderColor: 'var(--accent-green)', color: 'var(--accent-green)'}}>Upgrade</button>
+        <X className="banner-close" size={16} />
+      </div>
 
-      <main className="main-content">
-        {step === 0 && (
-          <div className="animate-slide-up" style={{maxWidth: '800px', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-            <h1>1 long video, 10 viral clips.</h1>
-            <p className="subtitle">
-              Create 10 viral clips from 1 long video in minutes, 10x faster.
-            </p>
+      <div className="main-body">
+        {/* Left Sidebar */}
+        <div className="sidebar">
+          <div className="sidebar-item active">
+            <Home />
+            <span>Home</span>
+          </div>
+          <div className="sidebar-item">
+            <Library />
+            <span>Library</span>
+          </div>
+          <div className="sidebar-item">
+            <Calendar />
+            <span>Scheduler</span>
+          </div>
+          <div className="sidebar-item">
+            <Palette />
+            <span>Brand Kit</span>
+          </div>
+          <div className="sidebar-item">
+            <Wallet />
+            <span>Pricing</span>
+          </div>
+          <div className="sidebar-item">
+            <Gift />
+            <span>Rewards</span>
+          </div>
+          <div className="sidebar-item has-badge">
+            <Code />
+            <span>API</span>
+            <span className="badge-new">New</span>
+          </div>
+          <div className="sidebar-item" style={{marginTop: 'auto'}}>
+            <Settings />
+            <span>Settings</span>
+          </div>
+        </div>
+
+        <div className="main-wrapper">
+          {/* Topbar */}
+          <div className="topbar">
+            <div className="topbar-left">
+              <div style={{background: 'var(--accent-green)', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                <Video size={20} color="#000" fill="#000" />
+              </div>
+              WayinVideo
+            </div>
             
-            {error && (
-              <div style={{ color: '#ef4444', marginBottom: '1rem', padding: '0.5rem 1rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', border: '1px solid #ef4444' }}>
-                {error}
+            <div className="topbar-center">
+              <div className="topbar-center-item" style={{position: 'relative'}}>
+                <Sparkles size={16} /> Skills
+                <span className="badge-new" style={{top: '-12px', right: '-10px'}}>New</span>
+              </div>
+              <div className="topbar-center-item">
+                <Globe size={16} /> English <ChevronDown size={14} />
+              </div>
+              <div className="topbar-center-item">
+                Tools <ChevronDown size={14} />
+              </div>
+              <div className="topbar-center-item" style={{position: 'relative'}}>
+                API
+                <span className="badge-new" style={{top: '-12px', right: '-10px'}}>New</span>
+              </div>
+              <div className="topbar-center-item">
+                <MessageSquare size={16} /> Discord
+              </div>
+            </div>
+
+            <div className="topbar-right">
+              <div className="icon-btn"><Bell size={18} /></div>
+              <div className="icon-btn" style={{background: '#333'}}>S</div>
+              <button className="btn-upgrade">
+                <Crown size={16} fill="#000" /> 65% OFF Upgrade
+              </button>
+            </div>
+          </div>
+
+          {/* Main Scrollable Content */}
+          <div className="main-scroll-area">
+            {step === 0 && (
+              <div className="animate-slide-up" style={{width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+                
+                <h1 className="hero-title">
+                  <span className="gradient-text">Discover, Create, Share</span>
+                </h1>
+                <h2 className="hero-subtitle">
+                  Cherish Every Moment
+                </h2>
+                
+                {error && (
+                  <div style={{ color: '#ef4444', marginBottom: '1rem', padding: '0.5rem 1rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', border: '1px solid #ef4444' }}>
+                    {error}
+                  </div>
+                )}
+
+                <div className="search-wrapper">
+                  <div className="search-input-container">
+                    <input 
+                      type="text" 
+                      placeholder="Paste a video link or upload to generate AI subtitles" 
+                      value={videoUrl}
+                      onChange={(e) => setVideoUrl(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleGetClips()}
+                    />
+                    <button className="btn-arrow" onClick={handleGetClips}>
+                      <ArrowRight size={24} />
+                    </button>
+                  </div>
+
+                  <div className="action-pills">
+                    <div className="pill-btn" onClick={() => fileInputRef.current?.click()}>
+                      <UploadCloud size={16} /> Upload
+                    </div>
+                    <div className="pill-btn">
+                      <PlayCircle size={16} /> YouTube Video Link
+                    </div>
+                    <div className="pill-btn">
+                      <Link size={16} /> Other Links
+                    </div>
+                    <div className="pill-btn">
+                      <Copy size={16} /> Bulk Import
+                    </div>
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      onChange={handleFileUpload} 
+                      accept="video/mp4,video/x-m4v,video/*" 
+                      style={{ display: 'none' }} 
+                    />
+                  </div>
+                </div>
+
+                {/* Tools Grid matching screenshot */}
+                <div className="tools-grid">
+                  <div className="tool-card">
+                    <Scissors size={32} />
+                    <span className="tool-card-title">AI Clipping</span>
+                  </div>
+                  <div className="tool-card">
+                    <Search size={32} />
+                    <span className="tool-card-title">Find Moments</span>
+                  </div>
+                  <div className="tool-card">
+                    <span className="tool-badge">New</span>
+                    <Gamepad2 size={32} />
+                    <span className="tool-card-title">Game Clipping</span>
+                  </div>
+                  <div className="tool-card">
+                    <Video size={32} />
+                    <span className="tool-card-title">AI Video</span>
+                  </div>
+                  
+                  <div className="tool-card">
+                    <span className="tool-badge">New</span>
+                    <Edit3 size={32} />
+                    <span className="tool-card-title">Video Editor</span>
+                  </div>
+                  <div className="tool-card">
+                    <FileText size={32} />
+                    <span className="tool-card-title">Video Summary</span>
+                  </div>
+                  <div className="tool-card">
+                    <span className="tool-badge free">Free</span>
+                    <FileAudio size={32} />
+                    <span className="tool-card-title">Video Transcripts</span>
+                  </div>
+                  <div className="tool-card">
+                    <span className="tool-badge free">Free</span>
+                    <Type size={32} />
+                    <span className="tool-card-title">AI Subtitles</span>
+                  </div>
+                  
+                  <div className="tool-card">
+                    <span className="tool-badge">New</span>
+                    <Activity size={32} />
+                    <span className="tool-card-title">Activity Score</span>
+                  </div>
+                  <div className="tool-card">
+                    <span className="tool-badge free">Free</span>
+                    <Crop size={32} />
+                    <span className="tool-card-title">Smart Crop</span>
+                  </div>
+                  <div className="tool-card">
+                    <span className="tool-badge">New</span>
+                    <ImageIcon size={32} />
+                    <span className="tool-card-title">AI Images</span>
+                  </div>
+                  <div className="tool-card">
+                    <Sparkles size={32} />
+                    <span className="tool-card-title">Enhance Quality</span>
+                  </div>
+                </div>
+
               </div>
             )}
 
-            <div className="input-container">
-              <Video className="input-icon" size={24} />
-              <input 
-                type="text" 
-                placeholder="Drop a video link..." 
-                value={videoUrl}
-                onChange={(e) => setVideoUrl(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleGetClips()}
-              />
-              <button className="btn btn-primary" onClick={handleGetClips}>
-                <Wand2 size={18} /> Get free clips
-              </button>
-            </div>
+            {step === 1 && (
+              <div className="animate-slide-up flex flex-col items-center" style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '4rem'}}>
+                <div style={{
+                  width: '80px', height: '80px', 
+                  borderRadius: '50%', 
+                  background: 'rgba(30, 215, 96, 0.1)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  marginBottom: '2rem'
+                }}>
+                  <Loader2 size={40} className="text-white" style={{animation: 'spin 2s linear infinite', color: 'var(--accent-green)'}} />
+                </div>
+                <h2 style={{fontSize: '2rem', marginBottom: '1rem', color: '#fff'}}>Analyzing Video...</h2>
+                <p style={{color: 'var(--text-secondary)'}}>
+                  Our AI is finding the most viral hooks and generating subtitles.
+                </p>
+              </div>
+            )}
 
-            <div className="mt-8 text-sm text-secondary" style={{marginTop: '1.5rem', color: 'var(--text-secondary)'}}>
-              or <span onClick={() => fileInputRef.current?.click()} style={{textDecoration: 'underline', cursor: 'pointer', color: 'white'}}>Upload local file</span>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleFileUpload} 
-                accept="video/mp4,video/x-m4v,video/*" 
-                style={{ display: 'none' }} 
-              />
-            </div>
-
-            {/* Removed platform icons as lucide-react lacks them */}
+            {step === 2 && (
+              <div className="animate-slide-up" style={{width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '2rem'}}>
+                 <h2 style={{fontSize: '2.5rem', marginBottom: '2rem', textAlign: 'left', color: '#fff'}}>Your Viral Clips</h2>
+                  <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem'}}>
+                    {clips.map((clip, index) => (
+                      <ClipCard key={index} clip={clip} index={index} />
+                    ))}
+                 </div>
+                 {videoUrl && (
+                   <div style={{marginTop: '3rem', display: 'flex', justifyContent: 'center'}}>
+                     <button className="btn-secondary" style={{padding: '0.8rem 2rem', background: 'var(--panel-bg)'}} onClick={handleCreateMore} disabled={isGeneratingMore}>
+                       {isGeneratingMore ? <><Loader2 size={18} className="spin" style={{display:'inline', marginRight:'8px'}} /> Generating...</> : "Create more clips"}
+                     </button>
+                   </div>
+                 )}
+              </div>
+            )}
           </div>
-        )}
-
-        {step === 1 && (
-          <div className="animate-slide-up flex flex-col items-center" style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-            <div style={{
-              width: '80px', height: '80px', 
-              borderRadius: '50%', 
-              background: 'rgba(255,255,255,0.1)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              marginBottom: '2rem'
-            }}>
-              <Loader2 size={40} className="text-white" style={{animation: 'spin 2s linear infinite'}} />
-            </div>
-            <h2 style={{fontSize: '2rem', marginBottom: '1rem'}}>Analyzing Video...</h2>
-            <p className="subtitle" style={{marginBottom: '0'}}>
-              Our AI is finding the most viral hooks and generating subtitles.
-            </p>
-            <p style={{color: '#666', marginTop: '0.5rem'}}>This usually takes about a minute.</p>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="animate-slide-up" style={{width: '100%', maxWidth: '1000px'}}>
-             <h2 style={{fontSize: '2.5rem', marginBottom: '2rem', textAlign: 'left'}}>Your Viral Clips</h2>
-              <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2rem'}}>
-                {clips.map((clip, index) => (
-                  <ClipCard key={index} clip={clip} index={index} />
-                ))}
-             </div>
-             {videoUrl && (
-               <div style={{marginTop: '3rem'}}>
-                 <button className="btn btn-secondary" onClick={handleCreateMore} disabled={isGeneratingMore}>
-                   {isGeneratingMore ? <><Loader2 size={18} className="spin" style={{display:'inline', marginRight:'8px'}} /> Generating...</> : "Create more clips"}
-                 </button>
-               </div>
-             )}
-          </div>
-        )}
-      </main>
+        </div>
+      </div>
+      
+      {/* Floating Chat Bubble */}
+      <div className="chat-bubble">
+        <MessageCircle size={24} color="#fff" />
+      </div>
     </div>
   );
 }

@@ -223,6 +223,7 @@ const LibraryView = () => {
 function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [videoUrl, setVideoUrl] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isGeneratingMore, setIsGeneratingMore] = useState(false);
   const [step, setStep] = useState(0); 
@@ -252,101 +253,87 @@ function App() {
     }
   };
 
-  const handleGetClips = async () => {
-    if (!videoUrl && !fileInputRef.current?.files?.length) {
-      setError('Please paste a video link or upload a file');
-      urlInputRef.current?.focus();
+  const handleProcess = async (toolName = 'AI Clipping') => {
+    if (selectedFile) {
+      setStep(1);
+      setIsProcessing(true);
+      setError('');
+
+      const formData = new FormData();
+      formData.append('video', selectedFile);
+      // Optional: pass toolName to backend if needed in the future
+      // formData.append('tool', toolName); 
+
+      try {
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const data = await response.json();
+        if (data.jobId) {
+          pollStatus(data.jobId, (newClips) => {
+            setClips(newClips);
+            setStep(2);
+            setIsProcessing(false);
+          });
+        } else {
+          setError(data.error || 'Failed to upload video');
+          setStep(0);
+          setIsProcessing(false);
+        }
+      } catch (err) {
+        setError('Failed to connect to backend server for upload.');
+        setStep(0);
+        setIsProcessing(false);
+      }
       return;
     }
-    setStep(1);
-    setIsProcessing(true);
-    setError('');
-    
-    try {
-      const response = await fetch('/api/process', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: videoUrl, offset: 0 })
-      });
+
+    if (videoUrl) {
+      setStep(1);
+      setIsProcessing(true);
+      setError('');
       
-      const data = await response.json();
-      if (data.jobId) {
-        pollStatus(data.jobId, (newClips) => {
-          setClips(newClips);
-          setStep(2);
-          setIsProcessing(false);
+      try {
+        const response = await fetch('/api/process', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: videoUrl, offset: 0, tool: toolName })
         });
-      } else {
-        setError(data.error || 'Failed to start processing job');
+        
+        const data = await response.json();
+        if (data.jobId) {
+          pollStatus(data.jobId, (newClips) => {
+            setClips(newClips);
+            setStep(2);
+            setIsProcessing(false);
+          });
+        } else {
+          setError(data.error || 'Failed to start processing job');
+          setStep(0);
+          setIsProcessing(false);
+        }
+      } catch (err) {
+        setError('Failed to connect to backend server. Make sure it is running.');
         setStep(0);
         setIsProcessing(false);
       }
-    } catch (err) {
-      setError('Failed to connect to backend server. Make sure it is running.');
-      setStep(0);
-      setIsProcessing(false);
+      return;
     }
+
+    setError('Please paste a video link or upload a file first');
+    urlInputRef.current?.focus();
   };
 
-  const handleCreateMore = async () => {
-    setIsGeneratingMore(true);
-    try {
-      const response = await fetch('/api/process', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: videoUrl, offset: clips.length })
-      });
-      
-      const data = await response.json();
-      if (data.jobId) {
-        pollStatus(data.jobId, (newClips) => {
-          setClips(prev => [...prev, ...newClips]);
-          setIsGeneratingMore(false);
-        });
-      } else {
-        alert(data.error || 'Failed to start processing job');
-        setIsGeneratingMore(false);
-      }
-    } catch (err) {
-      alert('Failed to connect to backend server.');
-      setIsGeneratingMore(false);
-    }
-  };
+  const handleGetClips = () => handleProcess('AI Clipping');
 
-  const handleFileUpload = async (event) => {
+  const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
-
-    setStep(1);
-    setIsProcessing(true);
-    setError('');
-
-    const formData = new FormData();
-    formData.append('video', file);
-
-    try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      });
-      
-      const data = await response.json();
-      if (data.jobId) {
-        pollStatus(data.jobId, (newClips) => {
-          setClips(newClips);
-          setStep(2);
-          setIsProcessing(false);
-        });
-      } else {
-        setError(data.error || 'Failed to upload video');
-        setStep(0);
-        setIsProcessing(false);
-      }
-    } catch (err) {
-      setError('Failed to connect to backend server for upload.');
-      setStep(0);
-      setIsProcessing(false);
-    }
+    
+    setSelectedFile(file);
+    setVideoUrl(`Selected: ${file.name}`);
   };
 
   return (
@@ -468,10 +455,13 @@ function App() {
                       type="text" 
                       placeholder="Paste a video link or upload to generate AI subtitles" 
                       value={videoUrl}
-                      onChange={(e) => setVideoUrl(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleGetClips()}
+                      onChange={(e) => {
+                        setVideoUrl(e.target.value);
+                        if (selectedFile) setSelectedFile(null); // Clear selected file if they start typing a URL
+                      }}
+                      onKeyDown={(e) => e.key === 'Enter' && handleProcess('AI Clipping')}
                     />
-                    <button className="btn-arrow" onClick={handleGetClips}>
+                    <button className="btn-arrow" onClick={() => handleProcess('AI Clipping')}>
                       <ArrowRight size={24} />
                     </button>
                   </div>
@@ -501,60 +491,60 @@ function App() {
 
                 {/* Tools Grid matching screenshot */}
                 <div className="tools-grid">
-                  <div className="tool-card" onClick={handleGetClips}>
+                  <div className="tool-card" onClick={() => handleProcess('AI Clipping')}>
                     <Scissors size={32} />
                     <span className="tool-card-title">AI Clipping</span>
                   </div>
-                  <div className="tool-card tool-card-highlighted">
+                  <div className="tool-card tool-card-highlighted" onClick={() => handleProcess('Find Moments')}>
                     <Search size={32} color="var(--accent-green)" />
                     <span className="tool-card-title">Find Moments</span>
                   </div>
-                  <div className="tool-card">
+                  <div className="tool-card" onClick={() => handleProcess('Game Clipping')}>
                     <span className="tool-badge">New</span>
                     <Gamepad2 size={32} />
                     <span className="tool-card-title">Game Clipping</span>
                   </div>
-                  <div className="tool-card">
+                  <div className="tool-card" onClick={() => handleProcess('AI Video')}>
                     <Video size={32} />
                     <span className="tool-card-title">AI Video</span>
                   </div>
                   
-                  <div className="tool-card">
+                  <div className="tool-card" onClick={() => handleProcess('Video Editor')}>
                     <span className="tool-badge">New</span>
                     <Edit3 size={32} />
                     <span className="tool-card-title">Video Editor</span>
                   </div>
-                  <div className="tool-card">
+                  <div className="tool-card" onClick={() => handleProcess('Video Summary')}>
                     <FileText size={32} />
                     <span className="tool-card-title">Video Summary</span>
                   </div>
-                  <div className="tool-card">
+                  <div className="tool-card" onClick={() => handleProcess('Video Transcripts')}>
                     <span className="tool-badge free">Free</span>
                     <FileAudio size={32} />
                     <span className="tool-card-title">Video Transcripts</span>
                   </div>
-                  <div className="tool-card">
+                  <div className="tool-card" onClick={() => handleProcess('AI Subtitles')}>
                     <span className="tool-badge free">Free</span>
                     <Type size={32} />
                     <span className="tool-card-title">AI Subtitles</span>
                   </div>
                   
-                  <div className="tool-card">
+                  <div className="tool-card" onClick={() => handleProcess('Speech Enhancer')}>
                     <span className="tool-badge">New</span>
                     <Activity size={32} />
                     <span className="tool-card-title">Speech Enhancer</span>
                   </div>
-                  <div className="tool-card">
+                  <div className="tool-card" onClick={() => handleProcess('AI Reframe')}>
                     <span className="tool-badge free">Free</span>
                     <Crop size={32} />
                     <span className="tool-card-title">AI Reframe</span>
                   </div>
-                  <div className="tool-card">
+                  <div className="tool-card" onClick={() => handleProcess('AI Thumbnail')}>
                     <span className="tool-badge">New</span>
                     <ImageIcon size={32} />
                     <span className="tool-card-title">AI Thumbnail</span>
                   </div>
-                  <div className="tool-card">
+                  <div className="tool-card" onClick={() => handleProcess('AI Hook')}>
                     <Sparkles size={32} />
                     <span className="tool-card-title">AI Hook</span>
                   </div>

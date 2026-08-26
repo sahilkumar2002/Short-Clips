@@ -4,7 +4,8 @@ import {
   Home, Library, Calendar, Palette, Wallet, Gift, Code, Settings,
   Globe, ChevronDown, Bell, Crown, MessageSquare, MessageCircle,
   PlayCircle, Link, Copy, X, ArrowRight,
-  Scissors, Search, Gamepad2, Edit3, FileText, FileAudio, Type, Activity, Crop, Image as ImageIcon, MoreHorizontal, Edit, Trash2
+  Scissors, Search, Gamepad2, Edit3, FileText, FileAudio, Type, Activity, Crop, Image as ImageIcon, MoreHorizontal, Edit, Trash2,
+  MousePointer2, Download, Send, Youtube, Instagram, Facebook, Linkedin, Twitter, Music, ThumbsUp, ThumbsDown, Forward, LayoutDashboard
 } from 'lucide-react';
 import './index.css';
 
@@ -57,7 +58,7 @@ const CaptionVideo = ({ clip }) => {
   );
 }
 
-const ClipCard = ({ clip, index, onEdit }) => {
+const ClipCard = ({ clip, index, onEdit, onShare, onFullScreenEdit }) => {
   const ratios = ['9:16', '16:9', '4:3', '1:1', '3:4'];
   const [ratio, setRatio] = useState('9:16');
   const [isDownloading, setIsDownloading] = useState(false);
@@ -89,67 +90,229 @@ const ClipCard = ({ clip, index, onEdit }) => {
   };
 
   return (
-    <div className="clip-card">
+    <div className="clip-card" style={{ display: 'flex', flexDirection: 'column' }}>
       <div style={{
         aspectRatio: getAspectRatioString(ratio),
         backgroundColor: '#000',
         position: 'relative',
         transition: 'aspect-ratio 0.3s ease'
       }}>
-         <div style={{
-            position: 'absolute', top: '1rem', left: '1rem', zIndex: 10,
-            background: 'rgba(0,0,0,0.6)', padding: '0.2rem 0.6rem',
-            borderRadius: '999px', fontSize: '0.8rem', fontWeight: 'bold',
-            color: 'var(--accent-green)', border: '1px solid var(--accent-green)'
-         }}>{clip.score} Score</div>
          <CaptionVideo clip={clip} />
       </div>
-      <div style={{padding: '1.5rem'}}>
-        <h3 style={{fontSize: '1.1rem', marginBottom: '0.5rem', fontWeight: 600}}>Viral Hook #{index + 1}</h3>
-        <p style={{color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem'}}>
-          "{clip.hook}"
-        </p>
+      <div style={{padding: '1rem', display: 'flex', flexDirection: 'column', flex: 1}}>
+        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem'}}>
+          <div style={{color: 'var(--accent-green)', fontWeight: 'bold', fontSize: '1.5rem'}}>
+            {clip.score}<span style={{fontSize: '0.8rem', color: '#888'}}>/100</span>
+          </div>
+          <div style={{display: 'flex', gap: '0.5rem'}}>
+            <button className="icon-btn-small"><MousePointer2 size={16} /></button>
+            <button className="icon-btn-small" onClick={() => onFullScreenEdit(clip)}><Scissors size={16} /></button>
+            <button className="icon-btn-small"><Crop size={16} /></button>
+            <button className="icon-btn-small" onClick={handleDownload}><Download size={16} /></button>
+            <button className="icon-btn-small" onClick={() => onShare(clip)}><Send size={16} /></button>
+            <button className="icon-btn-small" onClick={() => onEdit && onEdit(clip)}><MoreHorizontal size={16} /></button>
+          </div>
+        </div>
         
-        <div style={{display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap'}}>
-          {ratios.map(r => (
-            <button 
-              key={r}
-              onClick={() => setRatio(r)}
-              style={{
-                background: ratio === r ? 'var(--accent-green)' : 'rgba(255,255,255,0.1)',
-                color: ratio === r ? '#000' : '#fff',
-                border: 'none', borderRadius: '4px', padding: '0.3rem 0.6rem',
-                cursor: 'pointer', fontSize: '0.75rem', fontWeight: 'bold'
-              }}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
-
-        <div style={{display: 'flex', gap: '0.5rem', marginTop: '0.5rem'}}>
-          <button 
-            style={{flex: 1, background: 'var(--sidebar-bg)', color: '#fff', border: '1px solid var(--border-color)', padding: '0.6rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center'}}
-            onClick={handleDownload}
-            disabled={isDownloading}
-          >
-            {isDownloading ? <><Loader2 size={16} className="spin" style={{marginRight:'8px'}} /> Processing...</> : `Download (${ratio})`}
-          </button>
-          {onEdit && (
-            <button 
-              style={{flex: 1, background: 'transparent', color: '#fff', border: '1px solid var(--border-color)', padding: '0.6rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center'}}
-              onClick={() => onEdit(clip)}
-            >
-              <Edit size={16} style={{marginRight: '8px'}}/> Edit
-            </button>
-          )}
-        </div>
+        <h3 style={{fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 600, color: '#e4e4e7', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
+          {clip.title || `Viral Hook #${index + 1}`}
+        </h3>
+        <p style={{color: 'var(--text-secondary)', fontSize: '0.8rem', lineHeight: '1.4', flex: 1}}>
+          {clip.hook}
+        </p>
       </div>
     </div>
   );
 }
 
-const LibraryView = ({ clips, onDelete, onEdit }) => {
+const ShareModal = ({ onClose }) => {
+  const socials = [
+    { name: 'YouTube', icon: <Youtube size={28} />, color: '#ff0000' },
+    { name: 'TikTok', icon: <Music size={28} />, color: '#000000' },
+    { name: 'Instagram', icon: <Instagram size={28} />, color: '#e1306c' },
+    { name: 'Facebook', icon: <Facebook size={28} />, color: '#1877f2' },
+    { name: 'LinkedIn', icon: <Linkedin size={28} />, color: '#0077b5' },
+    { name: 'X/Twitter', icon: <Twitter size={28} />, color: '#1da1f2' }
+  ];
+
+  return (
+    <div className="modal-overlay" onClick={onClose} style={{ zIndex: 2000 }}>
+      <div className="modal-content" onClick={e => e.stopPropagation()} style={{ background: '#18181b', padding: '2rem', borderRadius: '12px', border: '1px solid #333', maxWidth: '500px', width: '90%', position: 'relative' }}>
+        <button onClick={onClose} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', color: '#a1a1aa', cursor: 'pointer' }}>
+          <X size={20} />
+        </button>
+        <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: '#fff' }}>Add Social Account</h2>
+        <p style={{ color: '#a1a1aa', marginBottom: '1.5rem', fontSize: '0.9rem' }}>To create and publish posts, please connect at least one social account.</p>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          {socials.map(s => (
+            <button key={s.name} style={{
+              background: '#09090b', border: '1px solid #27272a', borderRadius: '8px', 
+              padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', 
+              justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', transition: 'background 0.2s'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.background = '#27272a'}
+            onMouseOut={(e) => e.currentTarget.style.background = '#09090b'}
+            >
+              <div style={{ color: s.color }}>{s.icon}</div>
+              <div style={{ color: '#fff', fontWeight: 600, fontSize: '0.9rem' }}>{s.name}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const VideoEditorView = ({ clip, onClose }) => {
+  return (
+    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#09090b', zIndex: 3000, display: 'flex', flexDirection: 'column' }}>
+      {/* Top Navbar */}
+      <div style={{ height: '60px', borderBottom: '1px solid #27272a', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1.5rem', background: '#18181b' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <ArrowRight size={20} style={{ transform: 'rotate(180deg)' }} />
+          </button>
+          <span style={{ color: '#fff', fontWeight: 600, fontSize: '0.9rem' }}>{clip.title || clip.hook}</span>
+        </div>
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button style={{ background: 'transparent', border: '1px solid #333', color: '#fff', padding: '0.4rem 1rem', borderRadius: '6px', fontWeight: 500, cursor: 'pointer' }}>Saved</button>
+          <button style={{ background: 'transparent', border: '1px solid #333', color: '#fff', padding: '0.4rem 1rem', borderRadius: '6px', fontWeight: 500, cursor: 'pointer' }}>Publish</button>
+          <button style={{ background: 'var(--accent-green)', border: 'none', color: '#000', padding: '0.4rem 1.5rem', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>Export</button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        
+        {/* Left Sidebar Tools */}
+        <div style={{ width: '280px', background: '#18181b', borderRight: '1px solid #27272a', overflowY: 'auto', display: 'flex' }}>
+          
+          {/* Tool Categories Menu */}
+          <div style={{ width: '60px', borderRight: '1px solid #27272a', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '1rem 0', gap: '1.5rem' }}>
+             <Sparkles size={20} color="var(--accent-green)" />
+             <LayoutDashboard size={20} color="#a1a1aa" />
+             <Scissors size={20} color="#a1a1aa" />
+             <Type size={20} color="#a1a1aa" />
+             <UploadCloud size={20} color="#a1a1aa" />
+          </div>
+
+          {/* Tools Panel */}
+          <div style={{ flex: 1, padding: '1.5rem 1rem' }}>
+            <h3 style={{ color: '#fff', fontSize: '0.85rem', marginBottom: '1.5rem', fontWeight: 600 }}>AI Tools</h3>
+            
+            <div style={{ marginBottom: '2rem' }}>
+              <div style={{ color: '#71717a', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.75rem', textTransform: 'uppercase' }}>Sound Good</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                <span style={{ color: '#d4d4d8', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><FileAudio size={16}/> Clean Audio</span>
+                <div style={{ width: '32px', height: '18px', background: '#3f3f46', borderRadius: '99px' }}></div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                <span style={{ color: '#d4d4d8', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Scissors size={16}/> Remove Filler Words</span>
+                <Sparkles size={14} color="#eab308" />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ color: '#d4d4d8', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Crop size={16}/> Remove Silences</span>
+                <Sparkles size={14} color="#eab308" />
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '2rem' }}>
+              <div style={{ color: '#71717a', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.75rem', textTransform: 'uppercase' }}>Look Good</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                <span style={{ color: '#d4d4d8', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Edit3 size={16}/> Reframe</span>
+                <Sparkles size={14} color="#eab308" />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                <span style={{ color: '#d4d4d8', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Type size={16}/> Generate Hook</span>
+                <Sparkles size={14} color="#eab308" />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                <span style={{ color: '#d4d4d8', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Gamepad2 size={16}/> Add AI Emojis</span>
+                <div style={{ width: '32px', height: '18px', background: 'var(--accent-green)', borderRadius: '99px', position: 'relative' }}><div style={{width: '14px', height: '14px', background: '#000', borderRadius: '50%', position: 'absolute', top: '2px', right: '2px'}}></div></div>
+              </div>
+            </div>
+            
+            <div style={{ marginBottom: '2rem' }}>
+              <div style={{ color: '#71717a', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.75rem', textTransform: 'uppercase' }}>Generate Media</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                <span style={{ color: '#d4d4d8', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Video size={16}/> AI Video</span>
+                <Sparkles size={14} color="#eab308" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Center Preview Canvas */}
+        <div style={{ flex: 1, background: '#09090b', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+          
+          <div style={{ width: '360px', height: '640px', background: '#000', borderRadius: '16px', border: '1px solid #27272a', position: 'relative', overflow: 'hidden' }}>
+             {/* Fake video overlay */}
+             <div style={{ position: 'absolute', inset: 0 }}>
+                <CaptionVideo clip={clip} />
+             </div>
+             
+             {/* Shorts UI Overlay */}
+             <div style={{ position: 'absolute', right: '1rem', bottom: '5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center', zIndex: 30 }}>
+               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
+                 <ThumbsUp size={24} color="#fff" />
+                 <span style={{ color: '#fff', fontSize: '0.7rem' }}>Like</span>
+               </div>
+               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
+                 <ThumbsDown size={24} color="#fff" />
+                 <span style={{ color: '#fff', fontSize: '0.7rem' }}>Dislike</span>
+               </div>
+               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
+                 <MessageSquare size={24} color="#fff" />
+                 <span style={{ color: '#fff', fontSize: '0.7rem' }}>12</span>
+               </div>
+               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
+                 <Forward size={24} color="#fff" />
+                 <span style={{ color: '#fff', fontSize: '0.7rem' }}>Share</span>
+               </div>
+               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
+                 <Copy size={24} color="#fff" />
+                 <span style={{ color: '#fff', fontSize: '0.7rem' }}>Remix</span>
+               </div>
+             </div>
+
+             <div style={{ position: 'absolute', left: '1rem', bottom: '2rem', zIndex: 30, right: '4rem' }}>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                 <div style={{ width: '32px', height: '32px', background: '#333', borderRadius: '50%' }}></div>
+                 <span style={{ color: '#fff', fontWeight: 600, fontSize: '0.85rem' }}>@ChannelName</span>
+                 <button style={{ background: '#fff', color: '#000', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', fontSize: '0.7rem', fontWeight: 'bold' }}>Subscribe</button>
+               </div>
+               <p style={{ color: '#fff', fontSize: '0.8rem', marginBottom: '0.5rem' }}>{clip.hook}</p>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                 <Music size={14} color="#fff" />
+                 <span style={{ color: '#fff', fontSize: '0.75rem' }}>Original Sound - Creator</span>
+               </div>
+             </div>
+          </div>
+
+          <div style={{ position: 'absolute', bottom: '1.5rem', display: 'flex', gap: '1rem' }}>
+            <div style={{ background: '#18181b', border: '1px solid #27272a', padding: '0.4rem 0.8rem', borderRadius: '8px', color: '#a1a1aa', fontSize: '0.8rem' }}>📱 9:16</div>
+            <div style={{ background: '#18181b', border: '1px solid #27272a', padding: '0.4rem 0.8rem', borderRadius: '8px', color: '#a1a1aa', fontSize: '0.8rem' }}>Current Layout: Full</div>
+            <div style={{ background: '#18181b', border: '1px solid #27272a', padding: '0.4rem 0.8rem', borderRadius: '8px', color: '#fff', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Youtube size={14} color="#ff0000"/> YouTube Shorts</div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Bottom Timeline */}
+      <div style={{ height: '80px', background: '#09090b', borderTop: '1px solid #27272a', padding: '0 2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <button style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}><PlayCircle size={24} /></button>
+        <span style={{ color: '#a1a1aa', fontSize: '0.75rem' }}>00:00:00 / {clip.duration || '00:01:00'}</span>
+        <div style={{ flex: 1, height: '4px', background: '#27272a', borderRadius: '2px', position: 'relative' }}>
+          <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: '30%', background: 'var(--accent-green)', borderRadius: '2px' }}></div>
+          <div style={{ position: 'absolute', left: '30%', top: '-4px', width: '12px', height: '12px', background: '#fff', borderRadius: '50%', cursor: 'pointer', transform: 'translateX(-50%)' }}></div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const LibraryView = ({ clips, onDelete, onEdit, onShare, onFullScreenEdit }) => {
   return (
     <div style={{ padding: '0 2rem', width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
       <div className="library-nav">
@@ -173,35 +336,15 @@ const LibraryView = ({ clips, onDelete, onEdit }) => {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
         {clips.length === 0 && <div style={{color: '#888', marginTop: '2rem'}}>No clips in your library yet. Generate some first!</div>}
-        {clips.map(proj => (
-          <div key={proj.id} className="project-card">
-            <div className="project-thumbnail-wrapper">
-              <img 
-                src={proj.thumbnail || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=80'} 
-                alt={proj.title}
-                onError={(e) => {
-                  e.target.onerror = null; 
-                  e.target.src = 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=80';
-                }}
-              />
-              {proj.isNew && <div className="project-badge-new">new</div>}
-              <div className="project-overlay-bottom">
-                <div className="project-expires">Expires in {proj.expiresIn || '30 days'}</div>
-                <div className="project-duration">{proj.duration || '00:01:00'}</div>
-              </div>
-            </div>
-            <div className="project-info">
-              <div className="project-title">{proj.title || 'Untitled Clip'}</div>
-              <div className="project-source">{proj.source || 'Uploaded Video'}</div>
-              <div className="project-footer">
-                <div className="project-category">{proj.category || 'AI Clipping'}</div>
-                <div style={{display: 'flex', gap: '0.5rem'}}>
-                  <button onClick={() => onEdit(proj)} style={{background: 'transparent', border: '1px solid #333', color: '#fff', borderRadius: '4px', padding: '0.3rem 0.6rem', cursor: 'pointer', display: 'flex', alignItems: 'center'}}><Edit size={14} style={{marginRight: '4px'}}/> Edit</button>
-                  <button onClick={() => onDelete(proj.id)} style={{background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '4px', padding: '0.3rem 0.6rem', cursor: 'pointer', display: 'flex', alignItems: 'center'}}><Trash2 size={14} style={{marginRight: '4px'}}/> Delete</button>
-                </div>
-              </div>
-            </div>
-          </div>
+        {clips.map((proj, idx) => (
+          <ClipCard 
+            key={proj.id} 
+            clip={proj} 
+            index={idx}
+            onEdit={onEdit} 
+            onShare={onShare}
+            onFullScreenEdit={onFullScreenEdit}
+          />
         ))}
       </div>
     </div>
@@ -223,6 +366,8 @@ function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [editingClip, setEditingClip] = useState(null);
+  const [sharingClip, setSharingClip] = useState(null);
+  const [editingFullScreenClip, setEditingFullScreenClip] = useState(null);
 
   React.useEffect(() => {
     localStorage.setItem('opusLibrary', JSON.stringify(libraryClips));
@@ -381,6 +526,17 @@ function App() {
   return (
     <div className="app-layout">
       
+      {editingFullScreenClip && (
+        <VideoEditorView 
+          clip={editingFullScreenClip} 
+          onClose={() => setEditingFullScreenClip(null)} 
+        />
+      )}
+
+      {sharingClip && (
+        <ShareModal onClose={() => setSharingClip(null)} />
+      )}
+
       {/* Banner (matching screenshot) */}
       <div className="top-banner">
         <span className="banner-timer">71 : 55 : 07</span>
@@ -468,11 +624,18 @@ function App() {
 
           {/* Main Scrollable Content */}
           <div className="main-scroll-area">
-            {activeTab === 'library' ? (
+            {activeTab === 'library' && (
               <div className="animate-slide-up">
-                <LibraryView clips={libraryClips} onDelete={handleDeleteLibraryClip} onEdit={handleEditLibraryClip} />
+                <LibraryView 
+                  clips={libraryClips} 
+                  onDelete={handleDeleteLibraryClip} 
+                  onEdit={handleEditLibraryClip} 
+                  onShare={setSharingClip}
+                  onFullScreenEdit={setEditingFullScreenClip}
+                />
               </div>
-            ) : (
+            )}
+            {activeTab === 'home' && (
               <>
                 {step === 0 && (
                   <div className="animate-slide-up" style={{width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>

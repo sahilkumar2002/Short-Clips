@@ -176,7 +176,14 @@ const LibraryView = ({ clips, onDelete, onEdit }) => {
         {clips.map(proj => (
           <div key={proj.id} className="project-card">
             <div className="project-thumbnail-wrapper">
-              <img src={proj.thumbnail || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=80'} alt={proj.title} />
+              <img 
+                src={proj.thumbnail || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=80'} 
+                alt={proj.title}
+                onError={(e) => {
+                  e.target.onerror = null; 
+                  e.target.src = 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=80';
+                }}
+              />
               {proj.isNew && <div className="project-badge-new">new</div>}
               <div className="project-overlay-bottom">
                 <div className="project-expires">Expires in {proj.expiresIn || '30 days'}</div>
@@ -640,14 +647,38 @@ function App() {
             <h2 style={{marginBottom: '1.5rem', fontSize: '1.5rem'}}>Edit Video Clip</h2>
             
             <div style={{marginBottom: '1rem'}}>
-              <label style={{display: 'block', marginBottom: '0.5rem', color: '#a1a1aa'}}>Thumbnail Image URL</label>
-              <input 
-                type="text" 
-                value={editingClip.thumbnail} 
-                onChange={e => setEditingClip({...editingClip, thumbnail: e.target.value})}
-                style={{width: '100%', padding: '0.75rem', background: '#09090b', border: '1px solid #333', borderRadius: '8px', color: '#fff'}}
-                placeholder="https://example.com/image.jpg"
-              />
+              <label style={{display: 'block', marginBottom: '0.5rem', color: '#a1a1aa'}}>Thumbnail Image (URL or Local File)</label>
+              <div style={{display: 'flex', gap: '0.5rem'}}>
+                <input 
+                  type="text" 
+                  value={editingClip.thumbnail} 
+                  onChange={e => setEditingClip({...editingClip, thumbnail: e.target.value})}
+                  style={{flex: 1, padding: '0.75rem', background: '#09090b', border: '1px solid #333', borderRadius: '8px', color: '#fff'}}
+                  placeholder="https://example.com/image.jpg"
+                />
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  id="thumbnail-upload"
+                  style={{display: 'none'}}
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setEditingClip({...editingClip, thumbnail: reader.result});
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+                <label 
+                  htmlFor="thumbnail-upload" 
+                  style={{background: 'var(--panel-bg)', border: '1px solid #333', borderRadius: '8px', padding: '0 1rem', display: 'flex', alignItems: 'center', cursor: 'pointer', color: '#fff'}}
+                >
+                  <UploadCloud size={18} />
+                </label>
+              </div>
             </div>
             
             <div style={{marginBottom: '1rem'}}>

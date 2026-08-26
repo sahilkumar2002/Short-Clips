@@ -5,7 +5,8 @@ import {
   Globe, ChevronDown, Bell, Crown, MessageSquare, MessageCircle,
   PlayCircle, Link, Copy, X, ArrowRight,
   Scissors, Search, Gamepad2, Edit3, FileText, FileAudio, Type, Activity, Crop, Image as ImageIcon, MoreHorizontal, Edit, Trash2,
-  MousePointer2, Download, Send, Music, ThumbsUp, ThumbsDown, Forward, LayoutDashboard, Briefcase, Users
+  MousePointer2, Download, Send, Music, ThumbsUp, ThumbsDown, Forward, LayoutDashboard, Briefcase, Users,
+  Menu, Undo, Redo, Cloud, Eye, Volume2, Maximize, ZoomIn, Mic, Grid, Layers, Monitor
 } from 'lucide-react';
 import './index.css';
 
@@ -167,146 +168,218 @@ const ShareModal = ({ onClose }) => {
 const VideoEditorView = ({ clip, onClose }) => {
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#09090b', zIndex: 3000, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ width: '100%', height: '4px', background: '#9333ea' }}></div>
       {/* Top Navbar */}
-      <div style={{ height: '60px', borderBottom: '1px solid #27272a', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1.5rem', background: '#18181b' }}>
+      <div style={{ height: '56px', borderBottom: '1px solid #27272a', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1rem', background: '#18181b' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <ArrowRight size={20} style={{ transform: 'rotate(180deg)' }} />
+          <button style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Menu size={20} />
           </button>
-          <span style={{ color: '#fff', fontWeight: 600, fontSize: '0.9rem' }}>{clip.title || clip.hook}</span>
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <ArrowRight size={16} style={{ transform: 'rotate(180deg)' }} />
+          </button>
+          <span style={{ color: '#fff', fontWeight: 500, fontSize: '0.9rem' }}>{clip.title || clip.hook}</span>
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <button style={{ background: 'transparent', border: '1px solid #333', color: '#fff', padding: '0.4rem 1rem', borderRadius: '6px', fontWeight: 500, cursor: 'pointer' }}>Saved</button>
-          <button style={{ background: 'transparent', border: '1px solid #333', color: '#fff', padding: '0.4rem 1rem', borderRadius: '6px', fontWeight: 500, cursor: 'pointer' }}>Publish</button>
-          <button style={{ background: 'var(--accent-green)', border: 'none', color: '#000', padding: '0.4rem 1.5rem', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>Export</button>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', color: '#52525b', marginRight: '1rem' }}>
+            <Undo size={18} style={{ cursor: 'pointer' }} />
+            <Redo size={18} style={{ cursor: 'pointer' }} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#fff', fontSize: '0.8rem', fontWeight: 600, marginRight: '1rem' }}>
+            <Cloud size={16} /> Saved
+          </div>
+          <button style={{ background: '#27272a', border: 'none', color: '#fff', padding: '0.4rem 1.2rem', borderRadius: '16px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>Publish</button>
+          <button style={{ background: '#86efac', border: 'none', color: '#000', padding: '0.4rem 1.2rem', borderRadius: '16px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>Export</button>
         </div>
       </div>
 
       {/* Main Content */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         
-        {/* Left Sidebar Tools */}
-        <div style={{ width: '280px', background: '#18181b', borderRight: '1px solid #27272a', overflowY: 'auto', display: 'flex' }}>
-          
-          {/* Tool Categories Menu */}
-          <div style={{ width: '60px', borderRight: '1px solid #27272a', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '1rem 0', gap: '1.5rem' }}>
-             <Sparkles size={20} color="var(--accent-green)" />
-             <LayoutDashboard size={20} color="#a1a1aa" />
-             <Scissors size={20} color="#a1a1aa" />
-             <Type size={20} color="#a1a1aa" />
-             <UploadCloud size={20} color="#a1a1aa" />
-          </div>
+        {/* Left Sidebar Tools Menu */}
+        <div style={{ width: '70px', background: '#18181b', borderRight: '1px solid #27272a', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '1rem 0', gap: '1.2rem', overflowY: 'auto' }}>
+           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem', color: '#fff', cursor: 'pointer', background: '#27272a', width: '90%', padding: '0.5rem 0', borderRadius: '8px' }}>
+             <Sparkles size={18} />
+             <span style={{ fontSize: '0.65rem' }}>AI Tools</span>
+           </div>
+           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem', color: '#a1a1aa', cursor: 'pointer' }}>
+             <Layers size={18} />
+             <span style={{ fontSize: '0.65rem' }}>Template</span>
+           </div>
+           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem', color: '#a1a1aa', cursor: 'pointer' }}>
+             <Palette size={18} />
+             <span style={{ fontSize: '0.65rem' }}>Brand Kit</span>
+           </div>
+           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem', color: '#a1a1aa', cursor: 'pointer' }}>
+             <Scissors size={18} />
+             <span style={{ fontSize: '0.65rem' }}>Trim</span>
+           </div>
+           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem', color: '#a1a1aa', cursor: 'pointer' }}>
+             <Crop size={18} />
+             <span style={{ fontSize: '0.65rem' }}>Reframe</span>
+           </div>
+           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem', color: '#a1a1aa', cursor: 'pointer' }}>
+             <Subtitles size={18} />
+             <span style={{ fontSize: '0.65rem' }}>Subtitles</span>
+           </div>
+           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem', color: '#a1a1aa', cursor: 'pointer' }}>
+             <UploadCloud size={18} />
+             <span style={{ fontSize: '0.65rem' }}>Upload</span>
+           </div>
+           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem', color: '#a1a1aa', cursor: 'pointer' }}>
+             <Grid size={18} />
+             <span style={{ fontSize: '0.65rem' }}>Elements</span>
+           </div>
+           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem', color: '#a1a1aa', cursor: 'pointer' }}>
+             <Video size={18} />
+             <span style={{ fontSize: '0.65rem' }}>B-roll</span>
+           </div>
+        </div>
 
-          {/* Tools Panel */}
-          <div style={{ flex: 1, padding: '1.5rem 1rem' }}>
-            <h3 style={{ color: '#fff', fontSize: '0.85rem', marginBottom: '1.5rem', fontWeight: 600 }}>AI Tools</h3>
+        {/* Tools Panel */}
+        <div style={{ width: '280px', background: '#121212', borderRight: '1px solid #27272a', padding: '1.5rem 1rem', overflowY: 'auto' }}>
+          <h3 style={{ color: '#fff', fontSize: '1.1rem', marginBottom: '2rem', fontWeight: 600 }}>AI Tools</h3>
+          
+          <div style={{ marginBottom: '2rem' }}>
+            <div style={{ color: '#71717a', fontSize: '0.75rem', fontWeight: 600, marginBottom: '1rem', textTransform: 'uppercase' }}>Sound Good</div>
             
-            <div style={{ marginBottom: '2rem' }}>
-              <div style={{ color: '#71717a', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.75rem', textTransform: 'uppercase' }}>Sound Good</div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                <span style={{ color: '#d4d4d8', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><FileAudio size={16}/> Clean Audio</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <span style={{ color: '#e4e4e7', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Mic size={16} color="#a1a1aa"/> Clean Audio <span style={{ color: '#52525b', fontSize: '0.7rem', border: '1px solid #52525b', borderRadius: '50%', width: '14px', height: '14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>i</span>
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Sparkles size={14} color="#eab308" />
                 <div style={{ width: '32px', height: '18px', background: '#3f3f46', borderRadius: '99px' }}></div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                <span style={{ color: '#d4d4d8', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Scissors size={16}/> Remove Filler Words</span>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <span style={{ color: '#e4e4e7', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Scissors size={16} color="#a1a1aa"/> Remove Filler Words <span style={{ color: '#52525b', fontSize: '0.7rem', border: '1px solid #52525b', borderRadius: '50%', width: '14px', height: '14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>i</span>
+              </span>
+              <Sparkles size={14} color="#eab308" />
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <span style={{ color: '#e4e4e7', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Crop size={16} color="#a1a1aa"/> Remove Silences <span style={{ color: '#52525b', fontSize: '0.7rem', border: '1px solid #52525b', borderRadius: '50%', width: '14px', height: '14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>i</span>
+              </span>
+              <Sparkles size={14} color="#eab308" />
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '2rem' }}>
+            <div style={{ color: '#71717a', fontSize: '0.75rem', fontWeight: 600, marginBottom: '1rem', textTransform: 'uppercase' }}>Look Good</div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <span style={{ color: '#e4e4e7', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Edit3 size={16} color="#a1a1aa"/> Reframe <span style={{ color: '#52525b', fontSize: '0.7rem', border: '1px solid #52525b', borderRadius: '50%', width: '14px', height: '14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>i</span>
+              </span>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <span style={{ color: '#e4e4e7', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Type size={16} color="#a1a1aa"/> Generate Hook <span style={{ color: '#52525b', fontSize: '0.7rem', border: '1px solid #52525b', borderRadius: '50%', width: '14px', height: '14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>i</span>
+              </span>
+              <Sparkles size={14} color="#eab308" />
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <span style={{ color: '#e4e4e7', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Gamepad2 size={16} color="#a1a1aa"/> Add AI Emojis <span style={{ color: '#52525b', fontSize: '0.7rem', border: '1px solid #52525b', borderRadius: '50%', width: '14px', height: '14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>i</span>
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Sparkles size={14} color="#eab308" />
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ color: '#d4d4d8', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Crop size={16}/> Remove Silences</span>
-                <Sparkles size={14} color="#eab308" />
+                <div style={{ width: '32px', height: '18px', background: '#86efac', borderRadius: '99px', position: 'relative' }}><div style={{width: '14px', height: '14px', background: '#000', borderRadius: '50%', position: 'absolute', top: '2px', right: '2px'}}></div></div>
               </div>
             </div>
+          </div>
+        </div>
 
-            <div style={{ marginBottom: '2rem' }}>
-              <div style={{ color: '#71717a', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.75rem', textTransform: 'uppercase' }}>Look Good</div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                <span style={{ color: '#d4d4d8', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Edit3 size={16}/> Reframe</span>
-                <Sparkles size={14} color="#eab308" />
+        {/* Center Preview Canvas & Timeline wrapper */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#18181b' }}>
+          
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+            <div style={{ width: '280px', height: '498px', background: '#000', position: 'relative', overflow: 'hidden' }}>
+              {/* Actual Video */}
+               <div style={{ position: 'absolute', inset: 0 }}>
+                  <CaptionVideo clip={clip} />
+               </div>
+            </div>
+
+            <div style={{ position: 'absolute', bottom: '1.5rem', right: '2rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+              <div style={{ background: 'transparent', border: '1px solid #333', padding: '0.3rem 0.8rem', borderRadius: '8px', color: '#a1a1aa', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Crop size={14}/> 9:16</div>
+              <div style={{ background: 'transparent', border: '1px solid #333', padding: '0.3rem 0.8rem', borderRadius: '8px', color: '#a1a1aa', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Maximize size={14}/> Current Layout: Full</div>
+              <div style={{ background: 'transparent', border: '1px solid #333', padding: '0.3rem 0.8rem', borderRadius: '8px', color: '#fff', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><PlayCircle size={14}/> YouTube Shorts</div>
+              <span style={{ color: '#a1a1aa', fontSize: '0.75rem', marginLeft: '1rem' }}>Low-res Preview</span>
+            </div>
+          </div>
+
+          {/* Bottom Timeline */}
+          <div style={{ height: '300px', background: '#18181b', borderTop: '1px solid #27272a', display: 'flex', flexDirection: 'column' }}>
+            
+            {/* Timeline controls */}
+            <div style={{ padding: '0.8rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #27272a' }}>
+              <div style={{ display: 'flex', gap: '1rem', color: '#52525b' }}>
+                <Scissors size={18} style={{ cursor: 'pointer' }} />
+                <Trash2 size={18} style={{ cursor: 'pointer' }} />
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                <span style={{ color: '#d4d4d8', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Type size={16}/> Generate Hook</span>
-                <Sparkles size={14} color="#eab308" />
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <PlayCircle size={24} color="#fff" style={{ cursor: 'pointer' }} />
+                <span style={{ color: '#a1a1aa', fontSize: '0.75rem' }}>00:00:00.00 / 00:01:08.81</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                <span style={{ color: '#d4d4d8', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Gamepad2 size={16}/> Add AI Emojis</span>
-                <div style={{ width: '32px', height: '18px', background: 'var(--accent-green)', borderRadius: '99px', position: 'relative' }}><div style={{width: '14px', height: '14px', background: '#000', borderRadius: '50%', position: 'absolute', top: '2px', right: '2px'}}></div></div>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: '#a1a1aa' }}>
+                <FileAudio size={18} color="#86efac" />
+                <ZoomIn size={18} />
+                <div style={{ width: '60px', height: '4px', background: '#3f3f46', borderRadius: '2px', position: 'relative' }}>
+                  <div style={{ position: 'absolute', left: '20%', top: '-3px', width: '10px', height: '10px', background: '#fff', borderRadius: '50%' }}></div>
+                </div>
+                <Maximize size={18} />
+                <Monitor size={18} />
               </div>
             </div>
             
-            <div style={{ marginBottom: '2rem' }}>
-              <div style={{ color: '#71717a', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.75rem', textTransform: 'uppercase' }}>Generate Media</div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                <span style={{ color: '#d4d4d8', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Video size={16}/> AI Video</span>
-                <Sparkles size={14} color="#eab308" />
+            {/* Timeline Tracks */}
+            <div style={{ flex: 1, position: 'relative', overflowX: 'auto', overflowY: 'hidden', padding: '1rem 0' }}>
+              
+              {/* Ruler */}
+              <div style={{ display: 'flex', gap: '2rem', paddingLeft: '100px', marginBottom: '1rem' }}>
+                {Array(20).fill(0).map((_, i) => (
+                  <div key={i} style={{ color: '#52525b', fontSize: '0.6rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span>|</span>
+                  </div>
+                ))}
               </div>
+              
+              {/* Video Track */}
+              <div style={{ display: 'flex', paddingLeft: '1rem', position: 'relative', height: '60px' }}>
+                {/* Track controls */}
+                <div style={{ width: '80px', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#a1a1aa', marginRight: '1rem' }}>
+                  <Eye size={14} />
+                  <Volume2 size={14} />
+                  <div style={{ background: '#27272a', padding: '0.2rem 0.4rem', borderRadius: '4px', fontSize: '0.6rem' }}>1</div>
+                </div>
+                
+                {/* Thumbnails strip */}
+                <div style={{ display: 'flex', border: '2px solid #9333ea', borderRadius: '4px', overflow: 'hidden' }}>
+                   {Array(15).fill(0).map((_, i) => (
+                     <img key={i} src={clip.thumbnail || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=100&q=80'} style={{ width: '40px', height: '100%', objectFit: 'cover' }} />
+                   ))}
+                </div>
+                
+                {/* Playhead */}
+                <div style={{ position: 'absolute', left: '150px', top: '-30px', bottom: '0', width: '2px', background: '#86efac', zIndex: 10 }}>
+                  <div style={{ position: 'absolute', top: 0, left: '-4px', width: '10px', height: '10px', background: '#86efac', borderRadius: '2px' }}></div>
+                </div>
+              </div>
+
             </div>
+
           </div>
         </div>
 
-        {/* Center Preview Canvas */}
-        <div style={{ flex: 1, background: '#09090b', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-          
-          <div style={{ width: '360px', height: '640px', background: '#000', borderRadius: '16px', border: '1px solid #27272a', position: 'relative', overflow: 'hidden' }}>
-             {/* Fake video overlay */}
-             <div style={{ position: 'absolute', inset: 0 }}>
-                <CaptionVideo clip={clip} />
-             </div>
-             
-             {/* Shorts UI Overlay */}
-             <div style={{ position: 'absolute', right: '1rem', bottom: '5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center', zIndex: 30 }}>
-               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
-                 <ThumbsUp size={24} color="#fff" />
-                 <span style={{ color: '#fff', fontSize: '0.7rem' }}>Like</span>
-               </div>
-               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
-                 <ThumbsDown size={24} color="#fff" />
-                 <span style={{ color: '#fff', fontSize: '0.7rem' }}>Dislike</span>
-               </div>
-               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
-                 <MessageSquare size={24} color="#fff" />
-                 <span style={{ color: '#fff', fontSize: '0.7rem' }}>12</span>
-               </div>
-               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
-                 <Forward size={24} color="#fff" />
-                 <span style={{ color: '#fff', fontSize: '0.7rem' }}>Share</span>
-               </div>
-               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
-                 <Copy size={24} color="#fff" />
-                 <span style={{ color: '#fff', fontSize: '0.7rem' }}>Remix</span>
-               </div>
-             </div>
-
-             <div style={{ position: 'absolute', left: '1rem', bottom: '2rem', zIndex: 30, right: '4rem' }}>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                 <div style={{ width: '32px', height: '32px', background: '#333', borderRadius: '50%' }}></div>
-                 <span style={{ color: '#fff', fontWeight: 600, fontSize: '0.85rem' }}>@ChannelName</span>
-                 <button style={{ background: '#fff', color: '#000', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', fontSize: '0.7rem', fontWeight: 'bold' }}>Subscribe</button>
-               </div>
-               <p style={{ color: '#fff', fontSize: '0.8rem', marginBottom: '0.5rem' }}>{clip.hook}</p>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                 <Music size={14} color="#fff" />
-                 <span style={{ color: '#fff', fontSize: '0.75rem' }}>Original Sound - Creator</span>
-               </div>
-             </div>
-          </div>
-
-          <div style={{ position: 'absolute', bottom: '1.5rem', display: 'flex', gap: '1rem' }}>
-            <div style={{ background: '#18181b', border: '1px solid #27272a', padding: '0.4rem 0.8rem', borderRadius: '8px', color: '#a1a1aa', fontSize: '0.8rem' }}>📱 9:16</div>
-            <div style={{ background: '#18181b', border: '1px solid #27272a', padding: '0.4rem 0.8rem', borderRadius: '8px', color: '#a1a1aa', fontSize: '0.8rem' }}>Current Layout: Full</div>
-            <div style={{ background: '#18181b', border: '1px solid #27272a', padding: '0.4rem 0.8rem', borderRadius: '8px', color: '#fff', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><PlayCircle size={14} color="#ff0000"/> YouTube Shorts</div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Bottom Timeline */}
-      <div style={{ height: '80px', background: '#09090b', borderTop: '1px solid #27272a', padding: '0 2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <button style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}><PlayCircle size={24} /></button>
-        <span style={{ color: '#a1a1aa', fontSize: '0.75rem' }}>00:00:00 / {clip.duration || '00:01:00'}</span>
-        <div style={{ flex: 1, height: '4px', background: '#27272a', borderRadius: '2px', position: 'relative' }}>
-          <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: '30%', background: 'var(--accent-green)', borderRadius: '2px' }}></div>
-          <div style={{ position: 'absolute', left: '30%', top: '-4px', width: '12px', height: '12px', background: '#fff', borderRadius: '50%', cursor: 'pointer', transform: 'translateX(-50%)' }}></div>
-        </div>
       </div>
     </div>
   );

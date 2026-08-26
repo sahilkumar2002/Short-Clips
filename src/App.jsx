@@ -5,7 +5,7 @@ import {
   Globe, ChevronDown, Bell, Crown, MessageSquare, MessageCircle,
   PlayCircle, Link, Copy, X, ArrowRight,
   Scissors, Search, Gamepad2, Edit3, FileText, FileAudio, Type, Activity, Crop, Image as ImageIcon, MoreHorizontal, Edit, Trash2,
-  MousePointer2, Download, Send, Youtube, Instagram, Facebook, Linkedin, Twitter, Music, ThumbsUp, ThumbsDown, Forward, LayoutDashboard
+  MousePointer2, Download, Send, Music, ThumbsUp, ThumbsDown, Forward, LayoutDashboard, Briefcase, Users
 } from 'lucide-react';
 import './index.css';
 
@@ -127,12 +127,12 @@ const ClipCard = ({ clip, index, onEdit, onShare, onFullScreenEdit }) => {
 
 const ShareModal = ({ onClose }) => {
   const socials = [
-    { name: 'YouTube', icon: <Youtube size={28} />, color: '#ff0000' },
+    { name: 'YouTube', icon: <PlayCircle size={28} />, color: '#ff0000' },
     { name: 'TikTok', icon: <Music size={28} />, color: '#000000' },
-    { name: 'Instagram', icon: <Instagram size={28} />, color: '#e1306c' },
-    { name: 'Facebook', icon: <Facebook size={28} />, color: '#1877f2' },
-    { name: 'LinkedIn', icon: <Linkedin size={28} />, color: '#0077b5' },
-    { name: 'X/Twitter', icon: <Twitter size={28} />, color: '#1da1f2' }
+    { name: 'Instagram', icon: <ImageIcon size={28} />, color: '#e1306c' },
+    { name: 'Facebook', icon: <Users size={28} />, color: '#1877f2' },
+    { name: 'LinkedIn', icon: <Briefcase size={28} />, color: '#0077b5' },
+    { name: 'X/Twitter', icon: <MessageSquare size={28} />, color: '#1da1f2' }
   ];
 
   return (
@@ -293,7 +293,7 @@ const VideoEditorView = ({ clip, onClose }) => {
           <div style={{ position: 'absolute', bottom: '1.5rem', display: 'flex', gap: '1rem' }}>
             <div style={{ background: '#18181b', border: '1px solid #27272a', padding: '0.4rem 0.8rem', borderRadius: '8px', color: '#a1a1aa', fontSize: '0.8rem' }}>📱 9:16</div>
             <div style={{ background: '#18181b', border: '1px solid #27272a', padding: '0.4rem 0.8rem', borderRadius: '8px', color: '#a1a1aa', fontSize: '0.8rem' }}>Current Layout: Full</div>
-            <div style={{ background: '#18181b', border: '1px solid #27272a', padding: '0.4rem 0.8rem', borderRadius: '8px', color: '#fff', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Youtube size={14} color="#ff0000"/> YouTube Shorts</div>
+            <div style={{ background: '#18181b', border: '1px solid #27272a', padding: '0.4rem 0.8rem', borderRadius: '8px', color: '#fff', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><PlayCircle size={14} color="#ff0000"/> YouTube Shorts</div>
           </div>
         </div>
 

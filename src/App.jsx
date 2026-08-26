@@ -59,7 +59,7 @@ const CaptionVideo = ({ clip }) => {
   );
 }
 
-const ClipCard = ({ clip, index, onEdit, onShare, onFullScreenEdit }) => {
+const ClipCard = ({ clip, index, onEdit, onShare, onFullScreenEdit, onDelete }) => {
   const ratios = ['9:16', '16:9', '4:3', '1:1', '3:4'];
   const [ratio, setRatio] = useState('9:16');
   const [isDownloading, setIsDownloading] = useState(false);
@@ -107,10 +107,11 @@ const ClipCard = ({ clip, index, onEdit, onShare, onFullScreenEdit }) => {
           </div>
           <div style={{display: 'flex', gap: '0.5rem'}}>
             <button className="icon-btn-small"><MousePointer2 size={16} /></button>
-            <button className="icon-btn-small" onClick={() => onFullScreenEdit(clip)}><Scissors size={16} /></button>
+            <button className="icon-btn-small" onClick={() => onFullScreenEdit && onFullScreenEdit(clip)}><Scissors size={16} /></button>
             <button className="icon-btn-small"><Crop size={16} /></button>
             <button className="icon-btn-small" onClick={handleDownload}><Download size={16} /></button>
-            <button className="icon-btn-small" onClick={() => onShare(clip)}><Send size={16} /></button>
+            <button className="icon-btn-small" onClick={() => onShare && onShare(clip)}><Send size={16} /></button>
+            <button className="icon-btn-small" onClick={() => onDelete && onDelete(clip.id)} style={{ color: '#ef4444' }}><Trash2 size={16} /></button>
             <button className="icon-btn-small" onClick={() => onEdit && onEdit(clip)}><MoreHorizontal size={16} /></button>
           </div>
         </div>
@@ -417,6 +418,7 @@ const LibraryView = ({ clips, onDelete, onEdit, onShare, onFullScreenEdit }) => 
             onEdit={onEdit} 
             onShare={onShare}
             onFullScreenEdit={onFullScreenEdit}
+            onDelete={onDelete}
           />
         ))}
       </div>
@@ -448,6 +450,10 @@ function App() {
 
   const handleDeleteLibraryClip = (id) => {
     setLibraryClips(prev => prev.filter(c => c.id !== id));
+  };
+
+  const handleDeleteGeneratedClip = (id) => {
+    setClips(prev => prev.filter(c => c.id !== id));
   };
 
   const handleEditLibraryClip = (clip) => {
@@ -854,7 +860,7 @@ function App() {
                  <h2 style={{fontSize: '2.5rem', marginBottom: '2rem', textAlign: 'left', color: '#fff'}}>Your Viral Clips</h2>
                   <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem'}}>
                     {clips.map((clip, index) => (
-                      <ClipCard key={index} clip={clip} index={index} onEdit={handleEditLibraryClip} />
+                      <ClipCard key={index} clip={clip} index={index} onEdit={handleEditLibraryClip} onDelete={handleDeleteGeneratedClip} />
                     ))}
                  </div>
                  {videoUrl && (

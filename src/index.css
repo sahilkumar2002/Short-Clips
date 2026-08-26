@@ -649,3 +649,6 @@ body {
 .project-menu-btn:hover {
   color: #fff;
 }
+
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+

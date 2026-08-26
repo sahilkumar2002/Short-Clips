@@ -4,7 +4,7 @@ import {
   Home, Library, Calendar, Palette, Wallet, Gift, Code, Settings,
   Globe, ChevronDown, Bell, Crown, MessageSquare, MessageCircle,
   PlayCircle, Link, Copy, X, ArrowRight,
-  Scissors, Search, Gamepad2, Edit3, FileText, FileAudio, Type, Activity, Crop, Image as ImageIcon, MoreHorizontal
+  Scissors, Search, Gamepad2, Edit3, FileText, FileAudio, Type, Activity, Crop, Image as ImageIcon, MoreHorizontal, Edit, Trash2
 } from 'lucide-react';
 import './index.css';
 
@@ -57,7 +57,7 @@ const CaptionVideo = ({ clip }) => {
   );
 }
 
-const ClipCard = ({ clip, index }) => {
+const ClipCard = ({ clip, index, onEdit }) => {
   const ratios = ['9:16', '16:9', '4:3', '1:1', '3:4'];
   const [ratio, setRatio] = useState('9:16');
   const [isDownloading, setIsDownloading] = useState(false);
@@ -127,52 +127,29 @@ const ClipCard = ({ clip, index }) => {
           ))}
         </div>
 
-        <button 
-          style={{width: '100%', background: 'var(--sidebar-bg)', color: '#fff', border: '1px solid var(--border-color)', padding: '0.6rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center'}}
-          onClick={handleDownload}
-          disabled={isDownloading}
-        >
-          {isDownloading ? <><Loader2 size={16} className="spin" style={{marginRight:'8px'}} /> Processing...</> : `Download (${ratio})`}
-        </button>
+        <div style={{display: 'flex', gap: '0.5rem', marginTop: '0.5rem'}}>
+          <button 
+            style={{flex: 1, background: 'var(--sidebar-bg)', color: '#fff', border: '1px solid var(--border-color)', padding: '0.6rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center'}}
+            onClick={handleDownload}
+            disabled={isDownloading}
+          >
+            {isDownloading ? <><Loader2 size={16} className="spin" style={{marginRight:'8px'}} /> Processing...</> : `Download (${ratio})`}
+          </button>
+          {onEdit && (
+            <button 
+              style={{flex: 1, background: 'transparent', color: '#fff', border: '1px solid var(--border-color)', padding: '0.6rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center'}}
+              onClick={() => onEdit(clip)}
+            >
+              <Edit size={16} style={{marginRight: '8px'}}/> Edit
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-const LibraryView = () => {
-  const projects = [
-    {
-      id: 1,
-      thumbnail: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      isNew: true,
-      expiresIn: '30 days',
-      duration: '00:12:13',
-      title: 'Demo Project',
-      source: 'YouTube • Neal Brennan',
-      category: 'AI Clipping'
-    },
-    {
-      id: 2,
-      thumbnail: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      isNew: true,
-      expiresIn: '30 days',
-      duration: '00:12:53',
-      title: 'Demo Project',
-      source: 'Twitch',
-      category: 'Game Clipping'
-    },
-    {
-      id: 3,
-      thumbnail: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      isNew: true,
-      expiresIn: '30 days',
-      duration: '00:09:42',
-      title: 'Demo Project',
-      source: 'YouTube • CrashCourse',
-      category: 'Video Summary'
-    }
-  ];
-
+const LibraryView = ({ clips, onDelete, onEdit }) => {
   return (
     <div style={{ padding: '0 2rem', width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
       <div className="library-nav">
@@ -195,22 +172,26 @@ const LibraryView = () => {
       <div className="library-date-sep">2026-08-25</div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-        {projects.map(proj => (
+        {clips.length === 0 && <div style={{color: '#888', marginTop: '2rem'}}>No clips in your library yet. Generate some first!</div>}
+        {clips.map(proj => (
           <div key={proj.id} className="project-card">
             <div className="project-thumbnail-wrapper">
-              <img src={proj.thumbnail} alt={proj.title} />
+              <img src={proj.thumbnail || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=80'} alt={proj.title} />
               {proj.isNew && <div className="project-badge-new">new</div>}
               <div className="project-overlay-bottom">
-                <div className="project-expires">Expires in {proj.expiresIn}</div>
-                <div className="project-duration">{proj.duration}</div>
+                <div className="project-expires">Expires in {proj.expiresIn || '30 days'}</div>
+                <div className="project-duration">{proj.duration || '00:01:00'}</div>
               </div>
             </div>
             <div className="project-info">
-              <div className="project-title">{proj.title}</div>
-              <div className="project-source">{proj.source}</div>
+              <div className="project-title">{proj.title || 'Untitled Clip'}</div>
+              <div className="project-source">{proj.source || 'Uploaded Video'}</div>
               <div className="project-footer">
-                <div className="project-category">{proj.category}</div>
-                <MoreHorizontal className="project-menu-btn" size={20} />
+                <div className="project-category">{proj.category || 'AI Clipping'}</div>
+                <div style={{display: 'flex', gap: '0.5rem'}}>
+                  <button onClick={() => onEdit(proj)} style={{background: 'transparent', border: '1px solid #333', color: '#fff', borderRadius: '4px', padding: '0.3rem 0.6rem', cursor: 'pointer', display: 'flex', alignItems: 'center'}}><Edit size={14} style={{marginRight: '4px'}}/> Edit</button>
+                  <button onClick={() => onDelete(proj.id)} style={{background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '4px', padding: '0.3rem 0.6rem', cursor: 'pointer', display: 'flex', alignItems: 'center'}}><Trash2 size={14} style={{marginRight: '4px'}}/> Delete</button>
+                </div>
               </div>
             </div>
           </div>
@@ -229,6 +210,36 @@ function App() {
   const [step, setStep] = useState(0); 
   const [clips, setClips] = useState([]);
   const [error, setError] = useState('');
+  
+  const [libraryClips, setLibraryClips] = useState(() => {
+    const saved = localStorage.getItem('opusLibrary');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [editingClip, setEditingClip] = useState(null);
+
+  React.useEffect(() => {
+    localStorage.setItem('opusLibrary', JSON.stringify(libraryClips));
+  }, [libraryClips]);
+
+  const handleDeleteLibraryClip = (id) => {
+    setLibraryClips(prev => prev.filter(c => c.id !== id));
+  };
+
+  const handleEditLibraryClip = (clip) => {
+    setEditingClip({ ...clip });
+  };
+
+  const saveEdit = () => {
+    const updatedClip = { ...editingClip };
+    if (updatedClip.subtitles && updatedClip.subtitles.length > 0) {
+      updatedClip.subtitles[0].text = updatedClip.hook;
+    }
+    
+    setLibraryClips(prev => prev.map(c => c.id === updatedClip.id ? updatedClip : c));
+    setClips(prev => prev.map(c => c.id === updatedClip.id ? updatedClip : c));
+    setEditingClip(null);
+  };
+
   const fileInputRef = useRef(null);
   const urlInputRef = useRef(null);
 
@@ -239,7 +250,22 @@ function App() {
       const data = await response.json();
       
       if (data.status === 'completed') {
-        onComplete(data.clips);
+        const enrichedClips = data.clips.map(c => ({
+          ...c,
+          id: c.id || Math.random().toString(36).substring(2, 9),
+          title: c.title || 'Viral Clip',
+          thumbnail: c.thumbnail || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=80',
+          isNew: true,
+          date: new Date().toLocaleDateString(),
+          source: videoUrl ? (videoUrl.includes('Selected:') ? 'Local Upload' : videoUrl) : 'Unknown Source',
+        }));
+        onComplete(enrichedClips);
+        setLibraryClips(prev => {
+          // Merge new clips to library without duplicating if they already exist
+          const existingIds = new Set(prev.map(p => p.url));
+          const toAdd = enrichedClips.filter(c => !existingIds.has(c.url));
+          return [...toAdd, ...prev];
+        });
       } else if (data.status === 'error') {
         setError(data.error || 'An error occurred during processing.');
         setStep(0);
@@ -437,7 +463,7 @@ function App() {
           <div className="main-scroll-area">
             {activeTab === 'library' ? (
               <div className="animate-slide-up">
-                <LibraryView />
+                <LibraryView clips={libraryClips} onDelete={handleDeleteLibraryClip} onEdit={handleEditLibraryClip} />
               </div>
             ) : (
               <>
@@ -585,7 +611,7 @@ function App() {
                  <h2 style={{fontSize: '2.5rem', marginBottom: '2rem', textAlign: 'left', color: '#fff'}}>Your Viral Clips</h2>
                   <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem'}}>
                     {clips.map((clip, index) => (
-                      <ClipCard key={index} clip={clip} index={index} />
+                      <ClipCard key={index} clip={clip} index={index} onEdit={handleEditLibraryClip} />
                     ))}
                  </div>
                  {videoUrl && (
@@ -607,6 +633,61 @@ function App() {
       <div className="chat-bubble">
         <MessageCircle size={24} color="#fff" />
       </div>
+
+      {editingClip && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{background: '#18181b', padding: '2rem', borderRadius: '12px', border: '1px solid #333', maxWidth: '500px', width: '90%', color: '#fff'}}>
+            <h2 style={{marginBottom: '1.5rem', fontSize: '1.5rem'}}>Edit Video Clip</h2>
+            
+            <div style={{marginBottom: '1rem'}}>
+              <label style={{display: 'block', marginBottom: '0.5rem', color: '#a1a1aa'}}>Thumbnail Image URL</label>
+              <input 
+                type="text" 
+                value={editingClip.thumbnail} 
+                onChange={e => setEditingClip({...editingClip, thumbnail: e.target.value})}
+                style={{width: '100%', padding: '0.75rem', background: '#09090b', border: '1px solid #333', borderRadius: '8px', color: '#fff'}}
+                placeholder="https://example.com/image.jpg"
+              />
+            </div>
+            
+            <div style={{marginBottom: '1rem'}}>
+              <label style={{display: 'block', marginBottom: '0.5rem', color: '#a1a1aa'}}>Short Title</label>
+              <input 
+                type="text" 
+                value={editingClip.title} 
+                onChange={e => setEditingClip({...editingClip, title: e.target.value})}
+                style={{width: '100%', padding: '0.75rem', background: '#09090b', border: '1px solid #333', borderRadius: '8px', color: '#fff'}}
+                placeholder="My Viral Hook"
+              />
+            </div>
+            
+            <div style={{marginBottom: '1.5rem'}}>
+              <label style={{display: 'block', marginBottom: '0.5rem', color: '#a1a1aa'}}>Main Hook Text (Animated Caption)</label>
+              <textarea 
+                value={editingClip.hook} 
+                onChange={e => setEditingClip({...editingClip, hook: e.target.value})}
+                style={{width: '100%', padding: '0.75rem', background: '#09090b', border: '1px solid #333', borderRadius: '8px', color: '#fff', minHeight: '100px'}}
+                placeholder="The undeniable truth about..."
+              />
+            </div>
+            
+            <div style={{display: 'flex', gap: '1rem', justifyContent: 'flex-end'}}>
+              <button 
+                onClick={() => setEditingClip(null)} 
+                style={{padding: '0.75rem 1.5rem', background: 'transparent', border: '1px solid #333', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontWeight: 600}}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={saveEdit} 
+                style={{padding: '0.75rem 1.5rem', background: 'var(--accent-green)', border: 'none', borderRadius: '8px', color: '#000', cursor: 'pointer', fontWeight: 600}}
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

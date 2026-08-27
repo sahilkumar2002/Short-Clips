@@ -299,7 +299,7 @@ const VideoEditorView = ({ clip, onClose }) => {
   };
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#09090b', zIndex: 3000, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100vh', background: '#09090b', zIndex: 3000, display: 'flex', flexDirection: 'column' }}>
       <div style={{ width: '100%', height: '4px', background: '#9333ea' }}></div>
       {/* Top Navbar */}
       <div style={{ height: '56px', borderBottom: '1px solid #27272a', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1rem', background: '#18181b' }}>

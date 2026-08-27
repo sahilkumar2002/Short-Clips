@@ -33,15 +33,15 @@ const CaptionVideo = ({ clip, layout = 'Full' }) => {
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       {layout === 'Split' ? (
-        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ flex: 0.5, position: 'relative' }}>
+        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'row' }}>
+          <div style={{ flex: 0.5, position: 'relative', borderRight: '2px solid #000' }}>
             <video 
               src={videoSrc}
               style={{width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 25%'}}
               muted
             ></video>
           </div>
-          <div style={{ flex: 0.5, position: 'relative', borderTop: '2px solid #000' }}>
+          <div style={{ flex: 0.5, position: 'relative' }}>
             <video 
               src={videoSrc}
               controls
@@ -68,6 +68,13 @@ const CaptionVideo = ({ clip, layout = 'Full' }) => {
             ></video>
           </div>
         </div>
+      ) : layout === 'Fit' ? (
+        <video 
+          src={videoSrc}
+          controls
+          style={{width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center'}}
+          onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}
+        ></video>
       ) : (
         <video 
           src={videoSrc}

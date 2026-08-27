@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import './index.css';
 
-const CaptionVideo = ({ clip }) => {
+const CaptionVideo = ({ clip, layout = 'Full' }) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [showSubtitles, setShowSubtitles] = useState(true);
   
@@ -28,15 +28,36 @@ const CaptionVideo = ({ clip }) => {
   };
 
   const currentSub = subtitles.find(s => currentTime >= s.start && currentTime < s.end);
+  const videoSrc = (clip.url.startsWith('http') ? clip.url : (window.location.hostname === 'localhost' ? `http://localhost:3001${clip.url}` : clip.url)) + '#t=0.001';
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      <video 
-        src={(clip.url.startsWith('http') ? clip.url : (window.location.hostname === 'localhost' ? `http://localhost:3001${clip.url}` : clip.url)) + '#t=0.001'} 
-        controls
-        style={{width: '100%', height: '100%', objectFit: 'cover'}}
-        onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}
-      ></video>
+      {layout === 'Gameplay A' || layout === 'Split' ? (
+        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 0.35, position: 'relative' }}>
+            <video 
+              src={videoSrc}
+              style={{width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 20%'}}
+              muted
+            ></video>
+          </div>
+          <div style={{ flex: 0.65, position: 'relative', borderTop: '2px solid #000' }}>
+            <video 
+              src={videoSrc}
+              controls
+              style={{width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 80%'}}
+              onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}
+            ></video>
+          </div>
+        </div>
+      ) : (
+        <video 
+          src={videoSrc}
+          controls
+          style={{width: '100%', height: '100%', objectFit: 'cover'}}
+          onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}
+        ></video>
+      )}
       <button 
         onClick={() => setShowSubtitles(!showSubtitles)}
         style={{
@@ -185,6 +206,22 @@ const ShareModal = ({ onClose }) => {
 const VideoEditorView = ({ clip, onClose }) => {
   const [reframeOpen, setReframeOpen] = useState(false);
   const [activeRatio, setActiveRatio] = useState('9:16');
+  
+  const [activeLayout, setActiveLayout] = useState('Full');
+  const [layoutMenuOpen, setLayoutMenuOpen] = useState(false);
+
+  const layoutOptions = [
+    { name: 'Auto', icon: <Sparkles size={14} /> },
+    { name: 'Full', icon: <Maximize size={14} /> },
+    { name: 'Fit', icon: <Square size={14} /> },
+    { name: 'Split', icon: <Grid size={14} /> },
+    { name: 'Trio', icon: <Layers size={14} /> },
+    { name: 'Grid', icon: <LayoutDashboard size={14} /> },
+    { name: 'PiP', icon: <Monitor size={14} /> },
+    { name: 'Screen First', icon: <Monitor size={14} /> },
+    { name: 'Gameplay A', icon: <Smartphone size={14} /> },
+    { name: 'Gameplay B', icon: <Smartphone size={14} /> }
+  ];
 
   const ratioDimensions = {
     '9:16': { w: 280, h: 498 },
@@ -471,13 +508,34 @@ const VideoEditorView = ({ clip, onClose }) => {
             <div style={{ width: `${currentDims.w}px`, height: `${currentDims.h}px`, background: '#000', position: 'relative', overflow: 'hidden', transition: 'all 0.3s ease' }}>
               {/* Actual Video */}
                <div style={{ position: 'absolute', inset: 0 }}>
-                  <CaptionVideo clip={clip} />
+                  <CaptionVideo clip={clip} layout={activeLayout} />
                </div>
             </div>
 
             <div style={{ position: 'absolute', bottom: '1.5rem', right: '2rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-              <div style={{ background: 'transparent', border: '1px solid #333', padding: '0.3rem 0.8rem', borderRadius: '8px', color: '#a1a1aa', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Crop size={14}/> 9:16</div>
-              <div style={{ background: 'transparent', border: '1px solid #333', padding: '0.3rem 0.8rem', borderRadius: '8px', color: '#a1a1aa', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Maximize size={14}/> Current Layout: Full</div>
+              <div style={{ background: 'transparent', border: '1px solid #333', padding: '0.3rem 0.8rem', borderRadius: '8px', color: '#a1a1aa', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Crop size={14}/> {activeRatio}</div>
+              <div style={{ position: 'relative' }}>
+                <div onClick={() => setLayoutMenuOpen(!layoutMenuOpen)} style={{ background: 'transparent', border: '1px solid #333', padding: '0.3rem 0.8rem', borderRadius: '8px', color: '#a1a1aa', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}>
+                  {layoutOptions.find(l => l.name === activeLayout)?.icon} Current Layout: {activeLayout} <ChevronDown size={14} />
+                </div>
+                {layoutMenuOpen && (
+                  <div style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: '0.5rem', background: '#18181b', border: '1px solid #27272a', borderRadius: '8px', width: '200px', padding: '0.5rem', zIndex: 50, display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', borderBottom: '1px solid #27272a', marginBottom: '0.5rem', justifyContent: 'center' }}>
+                      <button style={{ flex: 1, background: '#10b981', color: '#000', border: 'none', borderRadius: '4px', padding: '0.2rem', fontSize: '0.75rem', fontWeight: 600 }}>ON</button>
+                      <button style={{ flex: 1, background: '#27272a', color: '#a1a1aa', border: 'none', borderRadius: '4px', padding: '0.2rem', fontSize: '0.75rem' }}>OFF</button>
+                    </div>
+                    {layoutOptions.map(l => (
+                      <div 
+                        key={l.name}
+                        onClick={() => { setActiveLayout(l.name); setLayoutMenuOpen(false); }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', borderRadius: '6px', cursor: 'pointer', background: activeLayout === l.name ? '#27272a' : 'transparent', color: activeLayout === l.name ? '#fff' : '#a1a1aa', fontSize: '0.85rem' }}
+                      >
+                        {l.icon} {l.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div style={{ background: 'transparent', border: '1px solid #333', padding: '0.3rem 0.8rem', borderRadius: '8px', color: '#fff', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><PlayCircle size={14}/> YouTube Shorts</div>
               <span style={{ color: '#a1a1aa', fontSize: '0.75rem', marginLeft: '1rem' }}>Low-res Preview</span>
             </div>

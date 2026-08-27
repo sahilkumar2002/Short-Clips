@@ -681,7 +681,6 @@ const VideoEditorView = ({ clip, onClose }) => {
         </div>
 
       </div>
-    </div>
   );
 };
 

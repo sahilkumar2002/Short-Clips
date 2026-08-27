@@ -77,10 +77,24 @@ const ClipCard = ({ clip, index, onEdit, onShare, onFullScreenEdit, onDelete }) 
       });
       const data = await response.json();
       if (data.downloadUrl) {
-         const a = document.createElement('a');
-         a.href = data.downloadUrl;
-         a.download = `clip_${index + 1}_${ratio.replace(':','x')}.mp4`;
-         a.click();
+         try {
+           const fileRes = await fetch(data.downloadUrl);
+           const blob = await fileRes.blob();
+           const url = window.URL.createObjectURL(blob);
+           const a = document.createElement('a');
+           a.style.display = 'none';
+           a.href = url;
+           a.download = `clip_${index + 1}_${ratio.replace(':','x')}.mp4`;
+           document.body.appendChild(a);
+           a.click();
+           window.URL.revokeObjectURL(url);
+           document.body.removeChild(a);
+         } catch (err) {
+           const a = document.createElement('a');
+           a.href = data.downloadUrl;
+           a.download = `clip_${index + 1}_${ratio.replace(':','x')}.mp4`;
+           a.click();
+         }
       } else {
          alert(data.error || 'Download failed');
       }
@@ -198,10 +212,24 @@ const VideoEditorView = ({ clip, onClose }) => {
       });
       const data = await response.json();
       if (data.downloadUrl) {
-         const a = document.createElement('a');
-         a.href = data.downloadUrl;
-         a.download = `exported_clip_${activeRatio.replace(':','x')}.mp4`;
-         a.click();
+         try {
+           const fileRes = await fetch(data.downloadUrl);
+           const blob = await fileRes.blob();
+           const url = window.URL.createObjectURL(blob);
+           const a = document.createElement('a');
+           a.style.display = 'none';
+           a.href = url;
+           a.download = `exported_clip_${activeRatio.replace(':','x')}.mp4`;
+           document.body.appendChild(a);
+           a.click();
+           window.URL.revokeObjectURL(url);
+           document.body.removeChild(a);
+         } catch (err) {
+           const a = document.createElement('a');
+           a.href = data.downloadUrl;
+           a.download = `exported_clip_${activeRatio.replace(':','x')}.mp4`;
+           a.click();
+         }
       } else {
          alert(data.error || 'Export failed');
       }

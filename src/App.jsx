@@ -299,8 +299,8 @@ const VideoEditorView = ({ clip, onClose }) => {
   };
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100vh', background: '#09090b', zIndex: 3000, display: 'flex', flexDirection: 'column' }}>
-      <div style={{ width: '100%', height: '4px', background: '#9333ea' }}></div>
+    <div style={{ position: 'fixed', inset: 0, background: '#09090b', zIndex: 3000, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ width: '100%', height: '4px', background: '#9333ea', flexShrink: 0 }}></div>
       {/* Top Navbar */}
       <div style={{ height: '56px', borderBottom: '1px solid #27272a', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1rem', background: '#18181b' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -328,7 +328,7 @@ const VideoEditorView = ({ clip, onClose }) => {
       </div>
 
       {/* Main Content */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', minWidth: 0 }}>
         
         {/* Left vertical menu */}
         <div style={{ width: '70px', flexShrink: 0, background: '#09090b', borderRight: '1px solid #27272a', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '1.5rem 0', gap: '1.5rem', overflowY: 'auto' }}>
@@ -576,17 +576,17 @@ const VideoEditorView = ({ clip, onClose }) => {
         </div>
 
         {/* Center Preview Canvas & Timeline wrapper */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#18181b' }}>
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: '#18181b' }}>
           
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', background: '#09090b', gap: '1.5rem' }}>
-            <div style={{ width: `${currentDims.w}px`, height: `${currentDims.h}px`, background: '#000', position: 'relative', overflow: 'hidden', transition: 'all 0.3s ease', borderRadius: '8px' }}>
+          <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', background: '#09090b', gap: '1.5rem', padding: '1rem' }}>
+            <div style={{ width: `${currentDims.w}px`, height: `${currentDims.h}px`, maxWidth: '100%', maxHeight: '100%', background: '#000', position: 'relative', overflow: 'hidden', transition: 'all 0.3s ease', borderRadius: '8px' }}>
               {/* Actual Video */}
                <div style={{ position: 'absolute', inset: 0 }}>
                   <CaptionVideo clip={clip} layout={activeLayout} />
                </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
               <div style={{ background: 'transparent', border: '1px solid #333', padding: '0.3rem 0.8rem', borderRadius: '8px', color: '#a1a1aa', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Crop size={14}/> {activeRatio}</div>
               <div style={{ position: 'relative' }}>
                 <div onClick={() => setVideoLayoutMenuOpen(!videoLayoutMenuOpen)} style={{ background: 'transparent', border: '1px solid #333', padding: '0.3rem 0.8rem', borderRadius: '8px', color: '#a1a1aa', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}>

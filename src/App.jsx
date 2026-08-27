@@ -186,6 +186,32 @@ const VideoEditorView = ({ clip, onClose }) => {
     setReframeOpen(false);
   };
 
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const response = await fetch('/api/download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clipUrl: clip.url, ratio: activeRatio })
+      });
+      const data = await response.json();
+      if (data.downloadUrl) {
+         const a = document.createElement('a');
+         a.href = data.downloadUrl;
+         a.download = `exported_clip_${activeRatio.replace(':','x')}.mp4`;
+         a.click();
+      } else {
+         alert(data.error || 'Export failed');
+      }
+    } catch (e) {
+       alert('Failed to connect to export server.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#09090b', zIndex: 3000, display: 'flex', flexDirection: 'column' }}>
       <div style={{ width: '100%', height: '4px', background: '#9333ea' }}></div>
@@ -209,7 +235,9 @@ const VideoEditorView = ({ clip, onClose }) => {
             <Cloud size={16} /> Saved
           </div>
           <button style={{ background: '#27272a', border: 'none', color: '#fff', padding: '0.4rem 1.2rem', borderRadius: '16px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>Publish</button>
-          <button style={{ background: '#86efac', border: 'none', color: '#000', padding: '0.4rem 1.2rem', borderRadius: '16px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>Export</button>
+          <button onClick={handleExport} disabled={isExporting} style={{ background: '#86efac', border: 'none', color: '#000', padding: '0.4rem 1.2rem', borderRadius: '16px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', opacity: isExporting ? 0.7 : 1 }}>
+            {isExporting ? 'Exporting...' : 'Export'}
+          </button>
         </div>
       </div>
 

@@ -458,7 +458,6 @@ const VideoEditorView = ({ clip, onClose }) => {
               </span>
             </div>
            </div>
-           </>
            )}
 
            {activeTab === 'Reframe' && (

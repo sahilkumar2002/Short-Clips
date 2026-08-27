@@ -467,6 +467,7 @@ const VideoEditorView = ({ clip, onClose }) => {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
               <span style={{ color: '#e4e4e7', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Globe size={16} color="#a1a1aa"/> Translate <span style={{ color: '#52525b', fontSize: '0.7rem', border: '1px solid #52525b', borderRadius: '50%', width: '14px', height: '14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>i</span>
+              </span>
             </div>
            </div>
            </>

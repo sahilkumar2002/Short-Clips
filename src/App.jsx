@@ -7,7 +7,8 @@ import {
   Scissors, Search, Gamepad2, Edit3, FileText, FileAudio, Type, Activity, Crop, Image as ImageIcon, MoreHorizontal, Edit, Trash2,
   MousePointer2, Download, Send, Music, ThumbsUp, ThumbsDown, Forward, LayoutDashboard, Briefcase, Users,
   Menu, Undo, Redo, Cloud, Eye, Volume2, Maximize, ZoomIn, Mic, Grid, Layers, Monitor,
-  Smartphone, RectangleHorizontal, Square, Tablet, Maximize2, Ghost
+  Smartphone, RectangleHorizontal, Square, Tablet, Maximize2, Ghost,
+  AlignLeft, Diamond
 } from 'lucide-react';
 import './index.css';
 
@@ -411,6 +412,54 @@ const VideoEditorView = ({ clip, onClose }) => {
                 <Sparkles size={14} color="#eab308" />
                 <div style={{ width: '32px', height: '18px', background: '#86efac', borderRadius: '99px', position: 'relative' }}><div style={{width: '14px', height: '14px', background: '#000', borderRadius: '50%', position: 'absolute', top: '2px', right: '2px'}}></div></div>
               </div>
+            </div>
+
+            <div style={{ color: '#71717a', fontSize: '0.75rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', textTransform: 'none' }}>Generate Media</div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <span style={{ color: '#e4e4e7', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Video size={16} color="#a1a1aa"/> AI Video <span style={{ color: '#52525b', fontSize: '0.7rem', border: '1px solid #52525b', borderRadius: '50%', width: '14px', height: '14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>i</span>
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <span style={{ color: '#e4e4e7', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Music size={16} color="#a1a1aa"/> AI Music <span style={{ color: '#52525b', fontSize: '0.7rem', border: '1px solid #52525b', borderRadius: '50%', width: '14px', height: '14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>i</span>
+              </span>
+              <Diamond size={14} color="#eab308" fill="#eab308" />
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <span style={{ color: '#e4e4e7', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Volume2 size={16} color="#a1a1aa"/> AI Sound Effect <span style={{ color: '#52525b', fontSize: '0.7rem', border: '1px solid #52525b', borderRadius: '50%', width: '14px', height: '14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>i</span>
+              </span>
+              <Diamond size={14} color="#eab308" fill="#eab308" />
+            </div>
+
+            <div style={{ color: '#71717a', fontSize: '0.75rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', textTransform: 'none' }}>Publish</div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <span style={{ color: '#e4e4e7', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <ImageIcon size={16} color="#a1a1aa"/> Generate Thumbnail <span style={{ color: '#52525b', fontSize: '0.7rem', border: '1px solid #52525b', borderRadius: '50%', width: '14px', height: '14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>i</span>
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <span style={{ color: '#e4e4e7', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Type size={16} color="#a1a1aa"/> Generate Title <span style={{ color: '#52525b', fontSize: '0.7rem', border: '1px solid #52525b', borderRadius: '50%', width: '14px', height: '14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>i</span>
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <span style={{ color: '#e4e4e7', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <AlignLeft size={16} color="#a1a1aa"/> Generate Description <span style={{ color: '#52525b', fontSize: '0.7rem', border: '1px solid #52525b', borderRadius: '50%', width: '14px', height: '14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>i</span>
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <span style={{ color: '#e4e4e7', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Globe size={16} color="#a1a1aa"/> Translate <span style={{ color: '#52525b', fontSize: '0.7rem', border: '1px solid #52525b', borderRadius: '50%', width: '14px', height: '14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>i</span>
+              </span>
             </div>
           </div>
         </div>

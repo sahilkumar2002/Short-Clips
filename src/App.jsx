@@ -351,10 +351,12 @@ const VideoEditorView = ({ clip, onClose }) => {
             <Video size={18} />
             <span style={{ fontSize: '0.65rem' }}>B-roll</span>
           </div>
+        </div>
         {/* Tools Panel */}
         <div style={{ width: '280px', background: '#121212', borderRight: '1px solid #27272a', padding: '1.5rem 1rem', overflowY: 'auto', position: 'relative' }}>
           <h3 style={{ color: '#fff', fontSize: '1.1rem', marginBottom: '2rem', fontWeight: 600 }}>{activeTab}</h3>
            {activeTab === 'AI Tools' && (
+             <>
              <div style={{ marginBottom: '2rem' }}>
                <div style={{ color: '#71717a', fontSize: '0.75rem', fontWeight: 600, marginBottom: '1rem', textTransform: 'uppercase' }}>Sound Good</div>
                
@@ -465,9 +467,9 @@ const VideoEditorView = ({ clip, onClose }) => {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
               <span style={{ color: '#e4e4e7', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Globe size={16} color="#a1a1aa"/> Translate <span style={{ color: '#52525b', fontSize: '0.7rem', border: '1px solid #52525b', borderRadius: '50%', width: '14px', height: '14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>i</span>
-              </span>
             </div>
            </div>
+           </>
            )}
 
            {activeTab === 'Reframe' && (

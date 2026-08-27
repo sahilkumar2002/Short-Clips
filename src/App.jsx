@@ -331,7 +331,7 @@ const VideoEditorView = ({ clip, onClose }) => {
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         
         {/* Left vertical menu */}
-        <div style={{ width: '70px', background: '#09090b', borderRight: '1px solid #27272a', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '1.5rem 0', gap: '1.5rem' }}>
+        <div style={{ width: '70px', flexShrink: 0, background: '#09090b', borderRight: '1px solid #27272a', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '1.5rem 0', gap: '1.5rem', overflowY: 'auto' }}>
           <div onClick={() => setActiveTab('AI Tools')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem', color: activeTab === 'AI Tools' ? '#fff' : '#a1a1aa', cursor: 'pointer', background: activeTab === 'AI Tools' ? '#27272a' : 'transparent', padding: '0.5rem', borderRadius: '8px', width: '80%' }}>
             <Sparkles size={18} />
             <span style={{ fontSize: '0.65rem' }}>AI Tools</span>
@@ -366,7 +366,7 @@ const VideoEditorView = ({ clip, onClose }) => {
           </div>
         </div>
         {/* Tools Panel */}
-        <div style={{ width: '280px', background: '#121212', borderRight: '1px solid #27272a', padding: '1.5rem 1rem', overflowY: 'auto', position: 'relative' }}>
+        <div style={{ width: '280px', flexShrink: 0, background: '#121212', borderRight: '1px solid #27272a', padding: '1.5rem 1rem', overflowY: 'auto', position: 'relative' }}>
           <h3 style={{ color: '#fff', fontSize: '1.1rem', marginBottom: '2rem', fontWeight: 600 }}>{activeTab}</h3>
            {activeTab === 'AI Tools' && (
              <>

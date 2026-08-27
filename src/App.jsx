@@ -6,7 +6,8 @@ import {
   PlayCircle, Link, Copy, X, ArrowRight,
   Scissors, Search, Gamepad2, Edit3, FileText, FileAudio, Type, Activity, Crop, Image as ImageIcon, MoreHorizontal, Edit, Trash2,
   MousePointer2, Download, Send, Music, ThumbsUp, ThumbsDown, Forward, LayoutDashboard, Briefcase, Users,
-  Menu, Undo, Redo, Cloud, Eye, Volume2, Maximize, ZoomIn, Mic, Grid, Layers, Monitor
+  Menu, Undo, Redo, Cloud, Eye, Volume2, Maximize, ZoomIn, Mic, Grid, Layers, Monitor,
+  Smartphone, RectangleHorizontal, Square, Tablet, Maximize2, Ghost
 } from 'lucide-react';
 import './index.css';
 
@@ -167,6 +168,24 @@ const ShareModal = ({ onClose }) => {
 };
 
 const VideoEditorView = ({ clip, onClose }) => {
+  const [reframeOpen, setReframeOpen] = useState(false);
+  const [activeRatio, setActiveRatio] = useState('9:16');
+
+  const ratioDimensions = {
+    '9:16': { w: 280, h: 498 },
+    '16:9': { w: 498, h: 280 },
+    '1:1': { w: 400, h: 400 },
+    '4:5': { w: 398, h: 498 },
+    'Original': { w: 498, h: 280 }
+  };
+
+  const currentDims = ratioDimensions[activeRatio];
+
+  const handleSelectRatio = (ratio) => {
+    setActiveRatio(ratio);
+    setReframeOpen(false);
+  };
+
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#09090b', zIndex: 3000, display: 'flex', flexDirection: 'column' }}>
       <div style={{ width: '100%', height: '4px', background: '#9333ea' }}></div>
@@ -272,10 +291,53 @@ const VideoEditorView = ({ clip, onClose }) => {
           <div style={{ marginBottom: '2rem' }}>
             <div style={{ color: '#71717a', fontSize: '0.75rem', fontWeight: 600, marginBottom: '1rem', textTransform: 'uppercase' }}>Look Good</div>
             
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', position: 'relative' }}>
               <span style={{ color: '#e4e4e7', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Edit3 size={16} color="#a1a1aa"/> Reframe <span style={{ color: '#52525b', fontSize: '0.7rem', border: '1px solid #52525b', borderRadius: '50%', width: '14px', height: '14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>i</span>
               </span>
+              
+              {/* Dropdown Trigger */}
+              <div 
+                onClick={() => setReframeOpen(!reframeOpen)}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#18181b', border: '1px solid #27272a', padding: '0.3rem 0.6rem', borderRadius: '6px', cursor: 'pointer', color: '#e4e4e7', fontSize: '0.8rem' }}
+              >
+                {activeRatio === '9:16' && <Smartphone size={14}/>}
+                {activeRatio === '16:9' && <RectangleHorizontal size={14}/>}
+                {activeRatio === '1:1' && <Square size={14}/>}
+                {activeRatio === '4:5' && <Tablet size={14}/>}
+                {activeRatio === 'Original' && <Maximize2 size={14}/>}
+                {activeRatio} <ChevronDown size={14} color="#a1a1aa" />
+              </div>
+
+              {/* Dropdown Menu */}
+              {reframeOpen && (
+                <div style={{ position: 'absolute', top: '100%', right: 0, width: '220px', background: '#18181b', border: '1px solid #27272a', borderRadius: '8px', padding: '0.5rem', zIndex: 50, marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                  
+                  <div onClick={() => handleSelectRatio('9:16')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem', borderRadius: '6px', background: activeRatio === '9:16' ? '#27272a' : 'transparent', cursor: 'pointer', color: '#e4e4e7', fontSize: '0.85rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Smartphone size={16}/> 9:16</div>
+                    <div style={{ display: 'flex', gap: '0.3rem', color: '#a1a1aa' }}><Users size={14}/> <ImageIcon size={14}/> <Music size={14}/> <Ghost size={14}/></div>
+                  </div>
+                  
+                  <div onClick={() => handleSelectRatio('16:9')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem', borderRadius: '6px', background: activeRatio === '16:9' ? '#27272a' : 'transparent', cursor: 'pointer', color: '#e4e4e7', fontSize: '0.85rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><RectangleHorizontal size={16}/> 16:9</div>
+                    <div style={{ display: 'flex', gap: '0.3rem', color: '#a1a1aa' }}><Users size={14}/> <PlayCircle size={14}/> <MessageSquare size={14}/></div>
+                  </div>
+                  
+                  <div onClick={() => handleSelectRatio('1:1')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem', borderRadius: '6px', background: activeRatio === '1:1' ? '#27272a' : 'transparent', cursor: 'pointer', color: '#e4e4e7', fontSize: '0.85rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Square size={16}/> 1:1</div>
+                    <div style={{ display: 'flex', gap: '0.3rem', color: '#a1a1aa' }}><Users size={14}/> <ImageIcon size={14}/></div>
+                  </div>
+                  
+                  <div onClick={() => handleSelectRatio('4:5')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem', borderRadius: '6px', background: activeRatio === '4:5' ? '#27272a' : 'transparent', cursor: 'pointer', color: '#e4e4e7', fontSize: '0.85rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Tablet size={16}/> 4:5</div>
+                    <div style={{ display: 'flex', gap: '0.3rem', color: '#a1a1aa' }}><MessageSquare size={14}/></div>
+                  </div>
+                  
+                  <div onClick={() => handleSelectRatio('Original')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem', borderRadius: '6px', background: activeRatio === 'Original' ? '#27272a' : 'transparent', cursor: 'pointer', color: '#e4e4e7', fontSize: '0.85rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Maximize2 size={16}/> Original</div>
+                  </div>
+                </div>
+              )}
             </div>
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
@@ -300,8 +362,8 @@ const VideoEditorView = ({ clip, onClose }) => {
         {/* Center Preview Canvas & Timeline wrapper */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#18181b' }}>
           
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-            <div style={{ width: '280px', height: '498px', background: '#000', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', background: '#09090b' }}>
+            <div style={{ width: `${currentDims.w}px`, height: `${currentDims.h}px`, background: '#000', position: 'relative', overflow: 'hidden', transition: 'all 0.3s ease' }}>
               {/* Actual Video */}
                <div style={{ position: 'absolute', inset: 0 }}>
                   <CaptionVideo clip={clip} />

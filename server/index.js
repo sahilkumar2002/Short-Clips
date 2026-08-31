@@ -402,6 +402,20 @@ app.get('/api/job/:jobId', (req, res) => {
     res.json(job);
 });
 
+app.get('/api/download-file', (req, res) => {
+    const fileUrl = req.query.file;
+    if (!fileUrl) return res.status(400).send('Missing file parameter');
+    
+    const filename = path.basename(fileUrl);
+    const filePath = path.join(clipsDir, filename);
+    
+    if (fs.existsSync(filePath)) {
+        res.download(filePath, filename);
+    } else {
+        res.status(404).send('File not found');
+    }
+});
+
 app.post('/api/download', async (req, res) => {
     const { clipUrl, ratio } = req.body;
     if (!clipUrl || !ratio) return res.status(400).json({ error: 'Missing clipUrl or ratio' });

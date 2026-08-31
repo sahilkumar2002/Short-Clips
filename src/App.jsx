@@ -277,24 +277,7 @@ const VideoEditorView = ({ clip, onClose }) => {
       });
       const data = await response.json();
       if (data.downloadUrl) {
-         try {
-           const fileRes = await fetch(data.downloadUrl);
-           const blob = await fileRes.blob();
-           const url = window.URL.createObjectURL(blob);
-           const a = document.createElement('a');
-           a.style.display = 'none';
-           a.href = url;
-           a.download = `exported_clip_${activeRatio.replace(':','x')}.mp4`;
-           document.body.appendChild(a);
-           a.click();
-           window.URL.revokeObjectURL(url);
-           document.body.removeChild(a);
-         } catch (err) {
-           const a = document.createElement('a');
-           a.href = data.downloadUrl;
-           a.download = `exported_clip_${activeRatio.replace(':','x')}.mp4`;
-           a.click();
-         }
+         window.location.href = `/api/download-file?file=${encodeURIComponent(data.downloadUrl)}`;
       } else {
          alert(data.error || 'Export failed');
       }
